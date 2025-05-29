@@ -1,0 +1,60 @@
+
+
+app:
+  name: "Vela"
+
+  modules: "/config/modules/"
+  sqripts: "/config/sqripts/"
+  static: "/config/static/"
+
+  # define four terminal
+  terminal: &terminal "kitty"
+
+
+bars:
+  left: true
+  right: true
+  top: true
+  bottom: true
+
+window:
+  width: 600
+  height: 400
+  # arifmetic centre of chosed modules matching to centr_pos
+  centring_obj: ["main", "left"]
+  # centre of window - 0, 0, first number increace to move right, second to move up 
+  centr_pos: [0, 0] 
+
+bar_left:
+  width: 50
+
+bar_right:
+  width: 50
+
+bar_top:
+  height: 50
+
+bar_bottom:
+  height: 50
+
+modules:
+  main:
+    terminal_example: 
+      name: "terminal"
+      icon: "icon_terminal_example.svg"
+      tooltip: "Launch terminal"
+      action: *terminal
+
+    script_example:
+      name: "script"
+      icon: "icon_script_example.svg"
+      tooltip: "Run your own script"
+      action: "script_example.sh"
+  left:
+    # elements on left bar
+  right:
+    # elements on right bar
+  top:
+    # elements on top bar
+  bottom: 
+    # elements on bottom bar

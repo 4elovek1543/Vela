@@ -49,8 +49,9 @@ pkg_check_modules(YAML_CPP REQUIRED yaml-cpp)
 
 
 file(GLOB SOURCES "src/*.cpp" "src/**/*.cpp")
+file(GLOB HEADERS "src/*.hpp" "src/**/*.hpp")
 
-add_executable(${PROJECT_NAME} ${SOURCES})
+add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS})
 
 
 target_include_directories(${PROJECT_NAME} PRIVATE ${GTKMM_INCLUDE_DIRS} ${YAML_CPP_INCLUDE_DIRS})
