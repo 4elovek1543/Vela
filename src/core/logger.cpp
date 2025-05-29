@@ -10,10 +10,21 @@ std::ofstream Logger::log_file;
 
 
 void Logger::init(const std::string &log_file_path) {
+    if (!Logger::set_log_file(log_file_path)) {
+        std::cerr << "Failed to init Logger" << std::endl;
+    }
+}
+
+bool Logger::set_log_file(const std::string &log_file_path) {
+    if (log_file.is_open()) {
+        log_file.close();
+    }
     log_file.open(log_file_path, std::ios::app);
     if (!log_file.is_open()) {
         std::cerr << "Failed to open log file! (filepath" << log_file_path << ")" << std::endl;
+        return false;
     }
+    return true;
 }
 
 void Logger::set_level(LogLevel level) {

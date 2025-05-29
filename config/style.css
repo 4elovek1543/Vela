@@ -5,41 +5,45 @@
 
     --border-radius-elem: 6px;
     --bk-color-elem: rgba(43, 46, 81, 0.33);
+    --bk-color-elem-2: rgba(31, 34, 66, 0.5);
 }
 
 
-#main {
+.main {
     border-radius: var(--border-radius);
     background-color: var(--bk-color);
 }
 
-#left {
+left {
     border-top-left-radius: var(--border-radius);
     border-bottom-left-radius: var(--border-radius);
     background-color: var(--bk-color);
 }
 
-#right {
+right {
     border-top-right-radius: var(--border-radius);
     border-bottom-right-radius: var(--border-radius);
     background-color: var(--bk-color);
 }
 
-#left {
+top {
     border-top-left-radius: var(--border-radius);
     border-top-right-radius: var(--border-radius);
     background-color: var(--bk-color);
 }
 
-#left {
+bottom {
     border-bottom-left-radius: var(--border-radius);
     border-bottom-right-radius: var(--border-radius);
     background-color: var(--bk-color);
 }
 
-.element {
+element {
     border-radius: var(--border-radius-elem);
     background-color: var(--bk-color-elem);
     padding: 0.1em;
     margin: 5px;
+}
+element:hover {
+    background-color: var(--bk-color-elem-2);
 }

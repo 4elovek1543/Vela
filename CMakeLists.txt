@@ -8,7 +8,7 @@ set(CMAKE_CXX_FLAGS "-Wall -Wextra -Wshadow -O2 -fsanitize=address,undefined")
 find_package(PkgConfig REQUIRED)
 
 
-set(REQUIRED_PACKAGES yaml-cpp)
+set(REQUIRED_PACKAGES gtkmm yaml-cpp)
 find_program(PACMAN pacman)
 if(PACMAN)
     # Проверка каждого пакета
