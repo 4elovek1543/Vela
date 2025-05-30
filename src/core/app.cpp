@@ -1,14 +1,64 @@
 #include "app.hpp"
 #include "logger.hpp"
+#include "config_manager.hpp"
 #include <string>
 
+
+
+Module::Module(const std::string &_name, std::pair<int, int> _pos, const std::string &path) : modulename(_name), pos(_pos) {
+    auto config = loag_config_file(path);
+    try {
+        name = getstring(config, modulename + ".name");
+        icon = getstring(config, modulename + ".icon");
+        tooltip = getstring(config, modulename + ".tooltip");
+        action = getstring(config, modulename + ".action");
+        style_classes = std::vector<std::string>();
+        if (config[modulename]["style_classes"].IsSequence()) {
+            for (const auto &cls : config[modulename]["style_classes"]) {
+                style_classes.push_back(cls.as<std::string>());
+            }
+        }
+        Logger::debug("Loaded module with path: " + path);
+    } catch (const YAML::Exception &e) {
+        Logger::error("Error while load module: " + std::string(e.what()));
+    }
+}
+
+
+// ====================================================================
 
 std::string NAME = "org.vela.launcher";
 
 
-Application::Application() : app(Gtk::Application::create(NAME)) {}
+Application::Application() : app(Gtk::Application::create(NAME)) {
+    constants = cfg::load_constants();
+}
 
-// 
+void load_module(const std::string &path, std::vector<Module> &res) {
+    auto mod = cfg::get(path);
+    res = std::vector<Module>();
+    try {
+        if (mod.IsMap()) {
+            for (const auto &config : mod) {
+                // std::pair<int, int> pos(getint(config.second, "row"), getint(config.second, "column"));
+                std::pair<int, int> pos(config.second["row"].as<int>(), config.second["column"].as<int>());
+                // auto cpath = getstring(config.second, "path");
+                // cpath = cfg::getstring("app.modules") + cpath;
+                auto cpath = cfg::getstring("app.modules") + getstring(config.second, "path");
+                res.push_back(Module(config.first.as<std::string>(), pos, cpath));
+            }
+        }
+        Logger::debug("Loaded module: " + path);
+    } catch (const YAML::Exception &e) {
+        Logger::error("Error while loading module: " + path + ", error: " + std::string(e.what()));
+    } catch (...) {
+        Logger::error("Error while loading module: " + path);
+    }
+}
+
+void Application::load_modules() {
+    load_module("modules.main", modules_main);
+}
 
 void Application::load_styles() {
     css_provider = Gtk::CssProvider::create();
@@ -40,6 +90,7 @@ void Application::setup() {
 }
 
 int Application::run() {
+    load_modules();
     load_styles();
     setup();
     return app->run();

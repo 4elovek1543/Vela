@@ -14,36 +14,36 @@
     background-color: var(--bk-color);
 }
 
-left {
+.left {
     border-top-left-radius: var(--border-radius);
     border-bottom-left-radius: var(--border-radius);
     background-color: var(--bk-color);
 }
 
-right {
+.right {
     border-top-right-radius: var(--border-radius);
     border-bottom-right-radius: var(--border-radius);
     background-color: var(--bk-color);
 }
 
-top {
+.top {
     border-top-left-radius: var(--border-radius);
     border-top-right-radius: var(--border-radius);
     background-color: var(--bk-color);
 }
 
-bottom {
+.bottom {
     border-bottom-left-radius: var(--border-radius);
     border-bottom-right-radius: var(--border-radius);
     background-color: var(--bk-color);
 }
 
-element {
+.element {
     border-radius: var(--border-radius-elem);
     background-color: var(--bk-color-elem);
     padding: 0.1em;
     margin: 5px;
 }
-element:hover {
+.element:hover {
     background-color: var(--bk-color-elem-2);
 }
