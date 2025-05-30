@@ -4,6 +4,7 @@
     --bk-color: rgba(50, 53, 85, 0.25);
 
     --border-radius-elem: 6px;
+    --color-elem: rgb(179, 179, 226);
     --bk-color-elem: rgba(43, 46, 81, 0.33);
     --bk-color-elem-2: rgba(31, 34, 66, 0.5);
 }
@@ -39,9 +40,13 @@
 }
 
 .element {
+    color: var(--color-elem);
+
+    border-width: 1px;
     border-radius: var(--border-radius-elem);
+    background: none;
     background-color: var(--bk-color-elem);
-    padding: 0.1em;
+    padding: 0.5em;
     margin: 5px;
 }
 .element:hover {
