@@ -3,4 +3,4 @@ config/scripts/*
 !config/modules/*example*
 !config/scripts/*example*
 build/*
-!build/build.sh
+!build/rebuild.sh
