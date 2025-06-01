@@ -45,9 +45,11 @@ signed main(int argc, char* argv[]) {
         argp++;
     }
 
+    bool set_float = true;
+
     Application app;
     try {
-        return app.run();
+        return app.run(set_float);
     } catch (const std::exception& e) {
         Logger::error(e.what());
         return 1;

@@ -41,6 +41,7 @@
 
 .element {
     color: var(--color-elem);
+    font-weight: 600;
 
     border-width: 1px;
     border-radius: var(--border-radius-elem);
@@ -51,4 +52,8 @@
 }
 .element:hover {
     background-color: var(--bk-color-elem-2);
+}
+
+.element-icon {
+    color: var(--color-elem);
 }

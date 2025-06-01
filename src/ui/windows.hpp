@@ -5,28 +5,41 @@
 #include <string>
 
 
+struct moduleinfo;
+
 class MainWindow : public Gtk::ApplicationWindow {
 public:
     MainWindow(const Glib::RefPtr<Gtk::Application> &app);
 
-    void add_module(const std::string &name, const std::string &command);
+    void add_module_(const moduleinfo &mod);
     void arrange_modules(int columns = 3);
 private:
     Gtk::Grid _grid;
-
-    void setup();
 };
-
 
 
 class Module : public Gtk::Button {
 public:
-    Module(const std::string &name, const std::string &command);
+    Module(const moduleinfo &mod);
+    Module(const std::string &_name, std::pair<int, int> _pos, int icon_size, const std::string &path);
 
     void execute() const;
-    const std::string& get_name() const;
-    const std::string& get_command() const;
 private:
-    std::string _name;
-    std::string _command;
+    std::string modulename;
+    std::string name;
+    std::string icon;
+    std::string tooltip;
+    std::string action;
+    std::pair<int, int> pos;
+    std::vector<std::string> style_classes;
+};
+
+
+struct moduleinfo {
+    const std::string name;
+    std::pair<int, int> pos;
+    int icon_size = 72;
+    const std::string path;
+
+    moduleinfo(const std::string &_name, std::pair<int, int> _pos, const std::string &_path) : name(_name), pos(_pos), path(_path) {}
 };
