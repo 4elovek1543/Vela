@@ -4,3 +4,4 @@ config/scripts/*
 !config/scripts/*example*
 build/*
 !build/rebuild.sh
+!build/install.sh

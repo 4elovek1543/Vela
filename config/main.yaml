@@ -1,8 +1,6 @@
 
 
 app:
-  name: "Vela"
-
   modules: "../config/modules/"
   sqripts: "../config/scripts/"
   static: "../config/static/"

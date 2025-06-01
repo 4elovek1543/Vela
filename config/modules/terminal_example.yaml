@@ -2,5 +2,7 @@ terminal_example:
   name: "terminal"
   icon: "icon_terminal_example.svg"
   tooltip: "Launch terminal"
-  # use $name to get value from app.contants 
+  # use here $name to get value from app.constants 
   action: "$terminal"
+  style_classes: []
+

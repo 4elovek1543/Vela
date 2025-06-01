@@ -108,6 +108,24 @@ std::string getstring(YAML::Node config, const std::string &path, std::string de
     }
 }
 
+std::vector<YAML::Node> getseq(YAML::Node config, const std::string &path, std::vector<YAML::Node> defval) {
+    auto node = getnode(config, path);
+    std::vector<YAML::Node> res;
+    if (node.IsSequence()) {
+        try {
+            for (const auto &el : node) res.push_back(el);
+            return res;
+        } catch (const YAML::Exception& e) {
+            Logger::error("Error in getseq: path:" + path + ", error: " + std::string(e.what()));
+            return defval;
+        }
+    } else {
+        Logger::error("Error in getseq: path:" + path + ", error: destination is not sequence");
+        return defval;
+    }
+}
+
+
 std::map<std::string, YAML::Node> cfg::load_constants() {
     std::map<std::string, YAML::Node> res;
     for (const auto &c : config["app"]["constants"]) {
@@ -117,11 +135,28 @@ std::map<std::string, YAML::Node> cfg::load_constants() {
     return res;
 }
 
-YAML::Node loag_config_file(const std::string &path, YAML::Node defval) {
+YAML::Node load_config_file(const std::string &path, YAML::Node defval) {
     try {
         return YAML::LoadFile(path);
     } catch (const YAML::Exception &e) {
         Logger::error("Couldn't load config: path: " + path + ", error: " + std::string(e.what()));
         return defval;
     }
+}
+
+std::string fill_from_constants(const std::string &val, const std::map<std::string, YAML::Node> &constants) {
+    std::string res;
+    for (size_t i = 0; i < val.size(); i++) {
+        if (val[i] == '$') {
+            int j = i + 1; 
+            std::string cconst;
+            while (j < (int)val.size() && val[j] != ' ') cconst += val[j], j++;
+            if (constants.count(cconst)) res += constants.at(cconst).as<std::string>();
+            else res += "$" + cconst;
+            i = j - 1;
+        } else {
+            res += val[i];
+        }
+    }
+    return res;
 }

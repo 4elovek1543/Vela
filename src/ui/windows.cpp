@@ -1,24 +1,34 @@
 #include "windows.hpp"
 #include "../core/logger.hpp"
+#include "../core/config_manager.hpp"
 
 
 
 MainWindow::MainWindow(const Glib::RefPtr<Gtk::Application> &app) : Gtk::ApplicationWindow(app) {
     set_title("Vela Launcher");
+    // TODO load from constants + launch over all 
     set_default_size(800, 600);
-    setup();
-}
 
-void MainWindow::setup() {
     _grid.set_margin(10);
     _grid.set_row_spacing(10);
     _grid.set_column_spacing(10);
     set_child(_grid);
+
+    auto controller = Gtk::EventControllerKey::create();
+    controller->signal_key_pressed().connect([this](guint keyval, guint, Gdk::ModifierType) {
+        if (keyval == GDK_KEY_Escape) {
+            close();
+            return true;
+        } 
+        return false;
+    }, false);
+
+    add_controller(controller);
 }
 
 
-void MainWindow::add_module(const std::string &name, const std::string &command) {
-    auto module = Gtk::make_managed<Module>(name, command);
+void MainWindow::add_module_(const moduleinfo &mod) {
+    auto module = Gtk::make_managed<Module>(mod);
     module->add_css_class("element");
     int sz = _grid.get_children().size();
     int row = sz / 3;
@@ -39,11 +49,46 @@ void MainWindow::arrange_modules(int columns) {
 // =============================================================================================
 
 
-Module::Module(const std::string &name, const std::string &command) 
-        : Gtk::Button(name), _name(name), _command(command) {
-    // set_margin(5);
-    // set_vexpand(true);
-    // set_hexpand(true);
+Module::Module(const moduleinfo &mod) : Module(mod.name, mod.pos, mod.icon_size, mod.path) {}
+
+
+Module::Module(const std::string &_name, std::pair<int, int> _pos, int icon_size, const std::string &path) 
+        : Gtk::Button(), modulename(_name), pos(_pos) {
+    auto config = load_config_file(path);
+    try {
+        name = getstring(config, modulename + ".name");
+        icon = getstring(config, modulename + ".icon");
+        tooltip = getstring(config, modulename + ".tooltip");
+        action = getstring(config, modulename + ".action");
+        auto cstyles = getseq(config, modulename + ".style_classes");
+        for (const auto &cls : cstyles) {
+            style_classes.push_back(cls.as<std::string>());
+        }
+        Logger::debug("Loaded module with path: " + path);
+    } catch (const YAML::Exception &e) {
+        Logger::error("Error while load module: " + std::string(e.what()));
+    }
+
+    auto box = Gtk::make_managed<Gtk::Box>(Gtk::Orientation::VERTICAL, 5);
+
+    auto icon_image = Gtk::make_managed<Gtk::Image>();
+    try {
+        auto pixbuf = Gdk::Pixbuf::create_from_file(cfg::getstring("app.static") + icon, icon_size, icon_size, true);
+        icon_image->set(Gdk::Texture::create_for_pixbuf(pixbuf));
+    } catch(const Glib::Error& e) {
+        Logger::error("Error while set icon: " + path + ", error: " + std::string(e.what()));
+        icon_image->set_from_icon_name("image-missing");
+    }
+    icon_image->set_size_request(icon_size, icon_size);
+    icon_image->add_css_class("element-icon");
+    box->append(*icon_image);
+
+    auto lbl = Gtk::make_managed<Gtk::Label>(name);
+    box->append(*lbl);    
+
+    set_child(*box);
+
+    set_tooltip_text(tooltip);
 
     signal_clicked().connect([this]() {
         execute();
@@ -51,13 +96,5 @@ Module::Module(const std::string &name, const std::string &command)
 }
 
 void Module::execute() const {
-    Logger::info("EXECUTE from [" + _name + "]: " + _command);
-}
-
-const std::string& Module::get_name() const {
-    return _name;
-}
-
-const std::string& Module::get_command() const {
-    return _command;
+    Logger::info("EXECUTE from [" + modulename + "]: " + action);
 }
