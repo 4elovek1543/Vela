@@ -81,7 +81,8 @@ Module::Module(const std::string &_name, std::pair<int, int> _pos, int icon_size
 
     auto icon_image = Gtk::make_managed<Gtk::Image>();
     try {
-        auto pixbuf = Gdk::Pixbuf::create_from_file(cfg::getstring("app.static") + icon, icon_size, icon_size, true);
+        // TODO rebuiuld with joinpath fixpath etc
+        auto pixbuf = Gdk::Pixbuf::create_from_file(cfg::fixpath(icon, "static"), icon_size, icon_size, true);
         icon_image->set(Gdk::Texture::create_for_pixbuf(pixbuf));
     } catch(const Glib::Error& e) {
         Logger::error("Error while set icon: " + path + ", error: " + std::string(e.what()));
