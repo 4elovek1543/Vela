@@ -2,5 +2,5 @@ script_example:
   name: "script"
   icon: "icon_script_example.svg"
   tooltip: "Run your own script"
-  action: "script_example.sh"
+  action: "$script:script_example.sh"
   style_classes: []

@@ -1,12 +1,13 @@
 
 
 app:
+  # relative path from root of proiject
   modules: "../config/modules/"
-  sqripts: "../config/scripts/"
+  scripts: "../config/scripts/"
   static: "../config/static/"
 
   constants:
-    # define four terminal
+    # define constants you can use in "action" of modules like $constant (exept "script")
     terminal: "kitty"
 
 

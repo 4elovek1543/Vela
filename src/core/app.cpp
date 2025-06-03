@@ -6,9 +6,7 @@
 
 
 
-Application::Application() : app(Gtk::Application::create("org.vela.launcher", Gio::Application::Flags::NON_UNIQUE)) {
-    constants = cfg::load_constants();
-}
+Application::Application() : app(Gtk::Application::create("org.vela.launcher", Gio::Application::Flags::NON_UNIQUE)) {}
 
 void load_module(const std::string &path, std::vector<moduleinfo> &res) {
     auto mod = cfg::get(path);
@@ -56,7 +54,7 @@ void Application::load_styles() {
 
 void Application::setup() {
     for (const moduleinfo &mod : modules_main) {
-        main_window->add_module_(mod);
+        main_window->add_module(mod);
     }
 }
 

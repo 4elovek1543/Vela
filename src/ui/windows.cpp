@@ -1,6 +1,8 @@
 #include "windows.hpp"
 #include "../core/logger.hpp"
 #include "../core/config_manager.hpp"
+#include <unistd.h>
+#include <sys/wait.h>
 
 
 
@@ -27,9 +29,10 @@ MainWindow::MainWindow(const Glib::RefPtr<Gtk::Application> &app) : Gtk::Applica
 }
 
 
-void MainWindow::add_module_(const moduleinfo &mod) {
+void MainWindow::add_module(const moduleinfo &mod) {
     auto module = Gtk::make_managed<Module>(mod);
-    module->add_css_class("element");
+    module->reload_styles();
+    // module->add_css_class("element");
     int sz = _grid.get_children().size();
     int row = sz / 3;
     int col = sz % 3;
@@ -59,7 +62,11 @@ Module::Module(const std::string &_name, std::pair<int, int> _pos, int icon_size
         name = getstring(config, modulename + ".name");
         icon = getstring(config, modulename + ".icon");
         tooltip = getstring(config, modulename + ".tooltip");
+        
         action = getstring(config, modulename + ".action");
+        action = cfg::fill_from_constants(action);
+        action = fill_from_scripts(action);
+
         auto cstyles = getseq(config, modulename + ".style_classes");
         for (const auto &cls : cstyles) {
             style_classes.push_back(cls.as<std::string>());
@@ -68,6 +75,7 @@ Module::Module(const std::string &_name, std::pair<int, int> _pos, int icon_size
     } catch (const YAML::Exception &e) {
         Logger::error("Error while load module: " + std::string(e.what()));
     }
+    reload_styles();
 
     auto box = Gtk::make_managed<Gtk::Box>(Gtk::Orientation::VERTICAL, 5);
 
@@ -95,6 +103,25 @@ Module::Module(const std::string &_name, std::pair<int, int> _pos, int icon_size
     });
 }
 
+void Module::reload_styles() {
+    add_css_class("element");
+    for (const auto &cls : style_classes) {
+        add_css_class(cls);
+    }
+}
+
 void Module::execute() const {
     Logger::info("EXECUTE from [" + modulename + "]: " + action);
+
+    pid_t pid = fork();
+    if (pid == 0) {
+        setsid();
+
+        execl("/bin/sh", "sh", "-c", action.c_str(), NULL);
+
+        Logger::error("Failed to execute: " + action);
+        _exit(EXIT_FAILURE);
+    } else if (pid < 0) {
+        Logger::error("Failed to fork, execution failed!");
+    }
 }
