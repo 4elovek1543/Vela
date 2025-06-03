@@ -5,8 +5,6 @@
 #include <yaml-cpp/yaml.h>
 
 
-std::string PFOJECT_PATH = "../";
-
 
 
 class cfg {
@@ -20,9 +18,17 @@ public:
     static std::string getstring(const std::string &path, std::string defval="");
 
     static std::map<std::string, YAML::Node> load_constants();
+    static std::string fill_from_constants(const std::string &val);
+    static YAML::Node get_const(const std::string &key, YAML::Node defval = YAML::Node());
+
+    static  std::string fixpath(const std::string &path, const std::string mode="");
 private:
     static YAML::Node config;
     static std::string cfgpath;
+
+    static std::map<std::string, YAML::Node> constants;
+
+    static std::string PROJECT_PATH;
 };
 
 
@@ -35,4 +41,5 @@ bool getbool(YAML::Node config, const std::string &path, bool defval=false);
 std::string getstring(YAML::Node config, const std::string &path, std::string defval="");
 std::vector<YAML::Node> getseq(YAML::Node config, const std::string &path, std::vector<YAML::Node> defval=std::vector<YAML::Node>());
 
-std::string fill_from_constants(std::string &val, const std::map<std::string, YAML::Node> &constants);
+std::string fill_from_constants(const std::string &val, const std::map<std::string, YAML::Node> &constants);
+std::string fill_from_scripts(const std::string &val);

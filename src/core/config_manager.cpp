@@ -1,6 +1,7 @@
 #include "config_manager.hpp"
 #include "logger.hpp"
 #include <vector>
+#include <filesystem>
 
 
 std::vector<std::string> split(const std::string &s, const char sep='.') {
@@ -16,15 +17,36 @@ std::vector<std::string> split(const std::string &s, const char sep='.') {
 } 
 
 
+std::string joinpath(const std::vector<std::string> &val) {
+    std::string res = "";
+    for (const auto &s : val) {
+        int cnt = 0;
+        if (res.size() > 0 && res[res.size()-1] == '/') cnt++;
+        if (s.size() > 0 && s[0] == '/') cnt++;
+        if (cnt == 0 && res.size() > 0) res += "/";
+        if (cnt == 2) res.pop_back();
+        res += s;
+    }
+    return res;
+} 
+
+
 YAML::Node cfg::config;
 std::string cfg::cfgpath;
+std::map<std::string, YAML::Node> cfg::constants;
+std::string cfg::PROJECT_PATH;
 
 
 void cfg::init(const std::string &path_to_cfg) {
+   // TODO here need to load current path correctly 
+   PROJECT_PATH = "";
+
     try {
         cfgpath = path_to_cfg;
         config = YAML::LoadFile(path_to_cfg);
         Logger::debug("Main config loaded");
+
+        constants = cfg::load_constants();
     } catch (const YAML::Exception &e) {
         Logger::error("Couldn't load main config: " + std::string(e.what()));
     }
@@ -135,6 +157,26 @@ std::map<std::string, YAML::Node> cfg::load_constants() {
     return res;
 }
 
+std::string cfg::fill_from_constants(const std::string &val) {
+    return ::fill_from_constants(val, constants);
+}
+
+YAML::Node cfg::get_const(const std::string &key, YAML::Node defval) {
+    return (constants.count(key)) ? constants.at(key) : defval;
+}
+
+std::string cfg::fixpath(const std::string &path, const std::string mode) {
+    std::string res;
+    if (path.size() == 0) return res;
+    if (path[0] == '/') return path;
+    std::string addstr = "";
+    if (mode == "modules") addstr = getstring("app.modules");
+    if (mode == "scripts") addstr = getstring("app.scripts");
+    if (mode == "static") addstr = getstring("app.static");
+
+    return joinpath({cfg::PROJECT_PATH, addstr, path}); 
+}
+
 YAML::Node load_config_file(const std::string &path, YAML::Node defval) {
     try {
         return YAML::LoadFile(path);
@@ -144,15 +186,44 @@ YAML::Node load_config_file(const std::string &path, YAML::Node defval) {
     }
 }
 
+bool streq(const std::string &s1, int p1, int e1, const std::string &s2, int p2, int e2) {
+    if (e1 - p1 != e2 - p2) return false;
+    for (int i = 0; i < e1 - p1; i++) if (s1[p1 + i] != s2[p2 + i]) return false;
+    return true; 
+} 
+
+
 std::string fill_from_constants(const std::string &val, const std::map<std::string, YAML::Node> &constants) {
     std::string res;
     for (size_t i = 0; i < val.size(); i++) {
-        if (val[i] == '$') {
+        if (val[i] == '$' && !streq(val, i, i + 8, "$script:", 0, 8)) {
             int j = i + 1; 
             std::string cconst;
             while (j < (int)val.size() && val[j] != ' ') cconst += val[j], j++;
             if (constants.count(cconst)) res += constants.at(cconst).as<std::string>();
             else res += "$" + cconst;
+            i = j - 1;
+        } else {
+            res += val[i];
+        }
+    }
+    return res;
+}
+
+namespace fs = std::filesystem;
+
+std::string fill_from_scripts(const std::string &val) {
+    std::string res;
+    for (size_t i = 0; i < val.size(); i++) {
+        if (val[i] == '$' && streq(val, i, i + 8, "$script:", 0, 8)) {
+            int j = i + 8; 
+            std::string cconst;
+            while (j < (int)val.size() && val[j] != ' ') cconst += val[j], j++;
+
+            std::string fixcconst = cfg::fixpath(cconst, "scripts");
+            if (fs::exists(fixcconst) && fs::is_regular_file(fixcconst)) res += "bash " + fixcconst;
+            else res += "$script:" + cconst;
+
             i = j - 1;
         } else {
             res += val[i];

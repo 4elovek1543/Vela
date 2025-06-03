@@ -11,7 +11,7 @@ class MainWindow : public Gtk::ApplicationWindow {
 public:
     MainWindow(const Glib::RefPtr<Gtk::Application> &app);
 
-    void add_module_(const moduleinfo &mod);
+    void add_module(const moduleinfo &mod);
     void arrange_modules(int columns = 3);
 private:
     Gtk::Grid _grid;
@@ -23,6 +23,7 @@ public:
     Module(const moduleinfo &mod);
     Module(const std::string &_name, std::pair<int, int> _pos, int icon_size, const std::string &path);
 
+    void reload_styles();
     void execute() const;
 private:
     std::string modulename;

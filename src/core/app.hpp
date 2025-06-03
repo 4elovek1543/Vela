@@ -13,8 +13,6 @@ public:
     Application();
     int run(bool set_float=true);
 private:
-    std::map<std::string, YAML::Node> constants;
-
     std::vector<moduleinfo> modules_main;
 
     Glib::RefPtr<Gtk::Application> app;
