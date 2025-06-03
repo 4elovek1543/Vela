@@ -2,6 +2,8 @@
 #include "logger.hpp"
 #include <vector>
 #include <filesystem>
+#include <unistd.h>
+#include <limits.h> 
 
 
 std::vector<std::string> split(const std::string &s, const char sep='.') {
@@ -31,6 +33,16 @@ std::string joinpath(const std::vector<std::string> &val) {
 } 
 
 
+std::string getExecutablePath() {
+    char result[PATH_MAX];
+    ssize_t count = readlink("/proc/self/exe", result, PATH_MAX);
+    if (count != -1) {
+        return std::string(result, count);
+    }
+    return "";
+}
+
+
 YAML::Node cfg::config;
 std::string cfg::cfgpath;
 std::map<std::string, YAML::Node> cfg::constants;
@@ -38,12 +50,13 @@ std::string cfg::PROJECT_PATH;
 
 
 void cfg::init(const std::string &path_to_cfg) {
-   // TODO here need to load current path correctly 
-   PROJECT_PATH = "";
-
+    // TODO here need to load current path correctly 
+    PROJECT_PATH = getExecutablePath();
+    if (PROJECT_PATH.size() > 0) for (int i = 0; i < 10; i++) PROJECT_PATH.pop_back();
+    Logger::debug("Project path: " + PROJECT_PATH);
     try {
-        cfgpath = path_to_cfg;
-        config = YAML::LoadFile(path_to_cfg);
+        cfgpath = cfg::fixpath(path_to_cfg);
+        config = YAML::LoadFile(cfgpath);
         Logger::debug("Main config loaded");
 
         constants = cfg::load_constants();
@@ -166,6 +179,7 @@ YAML::Node cfg::get_const(const std::string &key, YAML::Node defval) {
 }
 
 std::string cfg::fixpath(const std::string &path, const std::string mode) {
+    Logger::debug("fixpath: " + path + " " + mode);
     std::string res;
     if (path.size() == 0) return res;
     if (path[0] == '/') return path;
@@ -174,6 +188,7 @@ std::string cfg::fixpath(const std::string &path, const std::string mode) {
     if (mode == "scripts") addstr = getstring("app.scripts");
     if (mode == "static") addstr = getstring("app.static");
 
+    Logger::debug("-> " + joinpath({cfg::PROJECT_PATH, addstr, path}));
     return joinpath({cfg::PROJECT_PATH, addstr, path}); 
 }
 
@@ -221,6 +236,7 @@ std::string fill_from_scripts(const std::string &val) {
             while (j < (int)val.size() && val[j] != ' ') cconst += val[j], j++;
 
             std::string fixcconst = cfg::fixpath(cconst, "scripts");
+            Logger::debug(fixcconst + std::to_string(fs::exists(fixcconst) && fs::is_regular_file(fixcconst)));
             if (fs::exists(fixcconst) && fs::is_regular_file(fixcconst)) res += "bash " + fixcconst;
             else res += "$script:" + cconst;
 
@@ -229,5 +245,6 @@ std::string fill_from_scripts(const std::string &val) {
             res += val[i];
         }
     }
+    Logger::debug(val + " -> " + res);
     return res;
 }

@@ -14,11 +14,8 @@ void load_module(const std::string &path, std::vector<moduleinfo> &res) {
     try {
         if (mod.IsMap()) {
             for (const auto &config : mod) {
-                // std::pair<int, int> pos(getint(config.second, "row"), getint(config.second, "column"));
                 std::pair<int, int> pos(config.second["row"].as<int>(), config.second["column"].as<int>());
-                // auto cpath = getstring(config.second, "path");
-                // cpath = cfg::getstring("app.modules") + cpath;
-                auto cpath = cfg::getstring("app.modules") + getstring(config.second, "path");
+                auto cpath = cfg::fixpath(getstring(config.second, "path"), "modules");
                 res.push_back(moduleinfo(config.first.as<std::string>(), pos, cpath));
             }
         }

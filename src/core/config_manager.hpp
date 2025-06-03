@@ -9,7 +9,7 @@
 
 class cfg {
 public:
-    static void init(const std::string &path_to_cfg="../config/main.yaml");
+    static void init(const std::string &path_to_cfg="config/main.yaml");
 
     static YAML::Node get(const std::string &path, YAML::Node defval=YAML::Node());
     static int getint(const std::string &path, int defval=0);

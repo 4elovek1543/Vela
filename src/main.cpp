@@ -9,7 +9,8 @@
 signed main(int argc, char* argv[]) {
     Logger::init();  // По умолчанию: vela.log
     Logger::info("Starting Vela!");
-    cfg::init(); // По умолчанию: config/main.yaml
+    
+    std::string cfgpath = "";
     
     std::vector<std::string> args(argv, argv + argc);
     unsigned int argp = 0;
@@ -39,11 +40,14 @@ signed main(int argc, char* argv[]) {
                 std::cerr << "Ошибка при задании флагов!" << std::endl;
                 return 1;
             }
-            cfg::init(args[argp + 1]);
+            cfgpath = args[argp + 1];
+            // cfg::init(args[argp + 1]);
             Logger::info("Main config file changed to: " + args[argp + 1]);
         }
         argp++;
     }
+    if (cfgpath != "") cfg::init(cfgpath);
+    else cfg::init(); //  По умолчанию: config/main.yaml
 
     bool set_float = true;
 

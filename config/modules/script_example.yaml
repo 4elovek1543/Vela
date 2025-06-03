@@ -2,5 +2,6 @@ script_example:
   name: "script"
   icon: "icon_script_example.svg"
   tooltip: "Run your own script"
+  # convert to "bash /path/to/config/scripts/script_example.sh" if file exists
   action: "$script:script_example.sh"
   style_classes: []
