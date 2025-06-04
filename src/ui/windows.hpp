@@ -18,6 +18,19 @@ private:
 };
 
 
+class Window : public Gtk::Window {
+public:
+    Window(const std::string &name, const std::pair<int, int> sz, const std::pair<int, int> gridsz);
+
+    void add_module(const moduleinfo &mod);
+    void arrange_modules(int columns = 3);
+private:
+    std::string name;
+    std::pair<int, int> sz;
+    std::pair<int, int> gridsz;
+    Gtk::Grid _grid;
+};
+
 class Module : public Gtk::Button {
 public:
     Module(const moduleinfo &mod);
