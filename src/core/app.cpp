@@ -59,7 +59,7 @@ void Application::load_styles() {
     css_provider = Gtk::CssProvider::create();
 
     try {
-        css_provider->load_from_path("../config/style.css");
+        css_provider->load_from_path(cfg::fixpath("config/style.css"));
         auto display = Gdk::Display::get_default();
         Gtk::StyleContext::add_provider_for_display(
             display,

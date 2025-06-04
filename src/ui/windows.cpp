@@ -55,6 +55,42 @@ void MainWindow::arrange_modules(int columns) {
     }
 }
 
+// =============================================================================================
+
+
+Window::Window(const std::string &_name, const std::pair<int, int> _sz, const std::pair<int, int> _gridsz) 
+        : name(_name), sz(_sz), gridsz(_gridsz) {
+    
+    auto [width, height] = sz;
+    set_default_size(width, height);
+
+    auto [rows, columns] = gridsz;
+     _grid.set_margin(10);
+    _grid.set_row_spacing(10);
+    _grid.set_column_spacing(10);
+    _grid.set_row_homogeneous(true);
+    _grid.set_column_homogeneous(true);
+    auto fictiveel = Gtk::make_managed<Gtk::Box>();
+    _grid.attach(*fictiveel, 0, 0, columns, rows);
+    set_child(_grid);
+}
+
+void Window::add_module(const moduleinfo &mod) {
+    auto module = Gtk::make_managed<Module>(mod);
+    module->reload_styles();
+
+    auto [row, col] = module->getpos();
+    _grid.attach(*module, col, row, 1, 1);
+}
+
+void Window::arrange_modules(int columns) {
+    auto children = _grid.get_children();
+    // for (auto ch : children) _grid.remove(*ch);
+
+    for (size_t i = 0; i < children.size(); i++) {
+        _grid.attach(*dynamic_cast<Gtk::Widget*>(children[i]), i % columns, i / columns);
+    }
+}
 
 // =============================================================================================
 

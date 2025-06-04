@@ -19,6 +19,7 @@ private:
     Glib::RefPtr<Gtk::Application> app;
     Glib::RefPtr<Gtk::CssProvider> css_provider;
     MainWindow *main_window = nullptr;
+    Window *centre_window = nullptr;
 
     void load_modules();
     void load_styles();
