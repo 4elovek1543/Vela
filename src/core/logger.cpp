@@ -41,7 +41,7 @@ void Logger::log(LogLevel level, const std::string &message) {
     std::string color_str = "\033[0m";
     switch (level) {
         case LogLevel::DEBUG: level_str = "DEBUG"; break;
-        case LogLevel::INFO: level_str = "INFO"; break;
+        case LogLevel::INFO: level_str = "INFO"; color_str = "\033[32m"; break;
         case LogLevel::WARNING: level_str = "WARNING"; color_str = "\033[33m"; break;
         case LogLevel::ERROR: level_str = "ERROR"; color_str = "\033[31m"; break;
     }

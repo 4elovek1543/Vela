@@ -40,15 +40,17 @@ bar_bottom:
   height: 50
 
 modules:
+  # position in 0 indexation 
   main:
     terminal_example: 
-      row: 1
-      column: 1
+      row: 0
+      column: 0
+      # relative path from config/modules or absolute path
       path: "terminal_example.yaml"
 
     script_example:
       row: 1
-      column: 2
+      column: 4
       path: "script_example.yaml"
   left:
     # elements on left bar

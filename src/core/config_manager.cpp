@@ -50,7 +50,6 @@ std::string cfg::PROJECT_PATH;
 
 
 void cfg::init(const std::string &path_to_cfg) {
-    // TODO here need to load current path correctly 
     PROJECT_PATH = getExecutablePath();
     if (PROJECT_PATH.size() > 0) for (int i = 0; i < 10; i++) PROJECT_PATH.pop_back();
     Logger::debug("Project path: " + PROJECT_PATH);

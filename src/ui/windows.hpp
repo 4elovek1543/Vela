@@ -22,6 +22,8 @@ class Module : public Gtk::Button {
 public:
     Module(const moduleinfo &mod);
     Module(const std::string &_name, std::pair<int, int> _pos, int icon_size, const std::string &path);
+    
+    std::pair<int, int> getpos() const;
 
     void reload_styles();
     void execute() const;
@@ -37,10 +39,10 @@ private:
 
 
 struct moduleinfo {
-    const std::string name;
+    std::string name;
     std::pair<int, int> pos;
     int icon_size = 72;
-    const std::string path;
+    std::string path;
 
     moduleinfo(const std::string &_name, std::pair<int, int> _pos, const std::string &_path) : name(_name), pos(_pos), path(_path) {}
 };

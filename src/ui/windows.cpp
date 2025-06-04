@@ -3,17 +3,26 @@
 #include "../core/config_manager.hpp"
 #include <unistd.h>
 #include <sys/wait.h>
+#include <sigc++/trackable.h> 
 
 
 
 MainWindow::MainWindow(const Glib::RefPtr<Gtk::Application> &app) : Gtk::ApplicationWindow(app) {
     set_title("Vela Launcher");
-    // TODO load from constants + launch over all 
-    set_default_size(800, 600);
+    int width = cfg::getint("window.width", 800);
+    int height = cfg::getint("window.height", 600);
+    set_default_size(width, height);
+
+    int rows = cfg::getint("window.rows", 4);
+    int columns = cfg::getint("window.columns", 5);
 
     _grid.set_margin(10);
     _grid.set_row_spacing(10);
     _grid.set_column_spacing(10);
+    _grid.set_row_homogeneous(true);
+    _grid.set_column_homogeneous(true);
+    auto fictiveel = Gtk::make_managed<Gtk::Box>();
+    _grid.attach(*fictiveel, 0, 0, columns, rows);
     set_child(_grid);
 
     auto controller = Gtk::EventControllerKey::create();
@@ -32,10 +41,8 @@ MainWindow::MainWindow(const Glib::RefPtr<Gtk::Application> &app) : Gtk::Applica
 void MainWindow::add_module(const moduleinfo &mod) {
     auto module = Gtk::make_managed<Module>(mod);
     module->reload_styles();
-    // module->add_css_class("element");
-    int sz = _grid.get_children().size();
-    int row = sz / 3;
-    int col = sz % 3;
+
+    auto [row, col] = module->getpos();
     _grid.attach(*module, col, row, 1, 1);
 }
 
@@ -75,13 +82,19 @@ Module::Module(const std::string &_name, std::pair<int, int> _pos, int icon_size
     } catch (const YAML::Exception &e) {
         Logger::error("Error while load module: " + std::string(e.what()));
     }
+    set_hexpand(false);
+    set_vexpand(false);
+    
+    set_halign(Gtk::Align::CENTER);
+    set_valign(Gtk::Align::CENTER);
+
+
     reload_styles();
 
     auto box = Gtk::make_managed<Gtk::Box>(Gtk::Orientation::VERTICAL, 5);
 
     auto icon_image = Gtk::make_managed<Gtk::Image>();
     try {
-        // TODO rebuiuld with joinpath fixpath etc
         auto pixbuf = Gdk::Pixbuf::create_from_file(cfg::fixpath(icon, "static"), icon_size, icon_size, true);
         icon_image->set(Gdk::Texture::create_for_pixbuf(pixbuf));
     } catch(const Glib::Error& e) {
@@ -99,10 +112,18 @@ Module::Module(const std::string &_name, std::pair<int, int> _pos, int icon_size
 
     set_tooltip_text(tooltip);
 
-    signal_clicked().connect([this]() {
-        execute();
-    });
+    signal_clicked().connect(
+        sigc::track_obj([this]() {
+            execute();
+        }, *this)
+    );
 }
+
+
+std::pair<int, int> Module::getpos() const {
+    return pos;
+}
+
 
 void Module::reload_styles() {
     add_css_class("element");

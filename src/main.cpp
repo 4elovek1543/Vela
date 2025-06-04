@@ -9,7 +9,7 @@
 signed main(int argc, char* argv[]) {
     Logger::init();  // По умолчанию: vela.log
     Logger::info("Starting Vela!");
-    
+
     std::string cfgpath = "";
     
     std::vector<std::string> args(argv, argv + argc);
@@ -41,7 +41,6 @@ signed main(int argc, char* argv[]) {
                 return 1;
             }
             cfgpath = args[argp + 1];
-            // cfg::init(args[argp + 1]);
             Logger::info("Main config file changed to: " + args[argp + 1]);
         }
         argp++;
