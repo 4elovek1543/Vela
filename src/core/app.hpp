@@ -14,6 +14,7 @@ public:
     int run(bool set_float=true);
 private:
     std::vector<moduleinfo> modules_main;
+    std::pair<int, int> mxsz_main;
 
     Glib::RefPtr<Gtk::Application> app;
     Glib::RefPtr<Gtk::CssProvider> css_provider;

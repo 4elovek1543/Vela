@@ -3,7 +3,7 @@ project(Vela LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_CXX_FLAGS "-Wall -Wextra -Wshadow -O2 -fsanitize=address,undefined")
+set(CMAKE_CXX_FLAGS "-Wall -Wextra -Wshadow -O2")
 
 find_package(PkgConfig REQUIRED)
 
