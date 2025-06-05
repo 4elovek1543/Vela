@@ -13,15 +13,15 @@ app:
 
 bars:
   left: true
-  right: true
+  right: false
   top: true
-  bottom: true
+  bottom: false
 
 window:
   width: 600
   height: 400
   rows: 4
-  columns: 5
+  columns: 6
   # arifmetic centre of chosed modules matching to centr_pos
   centring_obj: ["main", "left"]
   # centre of window - 0, 0, first number increace to move right, second to move up 
@@ -29,15 +29,19 @@ window:
 
 bar_left:
   width: 50
+  rows: 4
 
 bar_right:
   width: 50
+  rows: 4
 
 bar_top:
   height: 50
+  columns: 6
 
 bar_bottom:
   height: 50
+  columns: 6
 
 modules:
   # position in 0 indexation 
@@ -54,9 +58,17 @@ modules:
       path: "script_example.yaml"
   left:
     # elements on left bar
+    terminal_example: 
+      row: 2
+      column: 0
+      path: "terminal_example.yaml"
   right:
     # elements on right bar
   top:
     # elements on top bar
+    terminal_example: 
+      row: 0
+      column: 3
+      path: "terminal_example.yaml"
   bottom: 
     # elements on bottom bar

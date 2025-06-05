@@ -14,8 +14,8 @@ enum class LogLevel {
 
 class Logger {
 public:
-    static void init(const std::string& log_file_path="vela.log");
-    static bool set_log_file(const std::string& log_file_path);
+    static void init(const std::string &log_file_path="vela.log");
+    static bool set_log_file(std::string log_file_path);
 
     static void set_level(LogLevel level);
 

@@ -7,7 +7,7 @@
 
 
 signed main(int argc, char* argv[]) {
-    Logger::init();  // По умолчанию: vela.log
+    Logger::init();  // По умолчанию: vela.log near executable file
     Logger::info("Starting Vela!");
 
     std::string cfgpath = "";
