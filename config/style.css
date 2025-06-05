@@ -6,12 +6,52 @@
     --border-radius-elem: 6px;
     --color-elem: rgb(179, 179, 226);
     --bk-color-elem: rgba(43, 46, 81, 0.33);
-    --bk-color-elem-2: rgba(31, 34, 66, 0.5);
+    --bk-color-elem-2: rgba(31, 34, 66, 0.6);
+
+    --color-focus-border-1: rgba();
+}
+
+
+.base {
+    background-color: rgba(0, 0, 0, 0);
+    box-shadow: none;
+    border: none;
+    padding: unset;
+    margin: unset;
+}
+
+
+@keyframes border-glow {
+    0% {
+        border-image-source: linear-gradient(to top right, #2acec9, #39d46d);
+    }   
+    50% {
+        border-image-source: linear-gradient(135deg, #2acec9, #39d46d);
+    } 
+    100% {
+        border-image-source: linear-gradient(to bottom right, #2acec9, #39d46d);
+    }
+}
+
+
+.window {
+    border: 2px solid transparent;
+    transition: border-radius 300ms ease;
+}
+.window:hover {
+    border-radius: 8px;
+    border-image-slice: 1;
+    border-image-source: linear-gradient(to top right, #2acec9, #39d46d);
+    transition: border-image-source 300ms ease;
+    /* border-image-source: linear-gradient(to top right, #ce532a, #5d39d4); */
+    animation: border-glow 1s;
+    animation-delay: 300ms;
 }
 
 
 .main {
     border-radius: var(--border-radius);
+    border-color: var(--bk-color);
     background-color: var(--bk-color);
 }
 

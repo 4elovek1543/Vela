@@ -1,5 +1,6 @@
 #include "windows.hpp"
 #include "../core/logger.hpp"
+#include "../core/notifier.hpp"
 #include "../core/config_manager.hpp"
 #include <unistd.h>
 #include <sys/wait.h>
@@ -13,16 +14,8 @@ MainWindow::MainWindow(const Glib::RefPtr<Gtk::Application> &app) : Gtk::Applica
     int height = cfg::getint("window.height", 600);
     set_default_size(width, height);
 
-    int rows = cfg::getint("window.rows", 4);
-    int columns = cfg::getint("window.columns", 5);
-
-    _grid.set_margin(10);
-    _grid.set_row_spacing(10);
-    _grid.set_column_spacing(10);
-    _grid.set_row_homogeneous(true);
-    _grid.set_column_homogeneous(true);
-    auto fictiveel = Gtk::make_managed<Gtk::Box>();
-    _grid.attach(*fictiveel, 0, 0, columns, rows);
+    _grid.set_vexpand(true);
+    _grid.set_hexpand(true);
     set_child(_grid);
 
     auto controller = Gtk::EventControllerKey::create();
@@ -38,57 +31,104 @@ MainWindow::MainWindow(const Glib::RefPtr<Gtk::Application> &app) : Gtk::Applica
 }
 
 
-void MainWindow::add_module(const moduleinfo &mod) {
-    auto module = Gtk::make_managed<Module>(mod);
-    module->reload_styles();
-
-    auto [row, col] = module->getpos();
-    _grid.attach(*module, col, row, 1, 1);
+void MainWindow::add_window(ElWindow *win, const std::pair<int, int> pos) {
+    auto [row, col] = pos;
+    _grid.attach(*win, col, row, 1, 1);
 }
 
-void MainWindow::arrange_modules(int columns) {
-    auto children = _grid.get_children();
-    // for (auto ch : children) _grid.remove(*ch);
-
-    for (size_t i = 0; i < children.size(); i++) {
-        _grid.attach(*dynamic_cast<Gtk::Widget*>(children[i]), i % columns, i / columns);
-    }
-}
 
 // =============================================================================================
 
 
-Window::Window(const std::string &_name, const std::pair<int, int> _sz, const std::pair<int, int> _gridsz) 
+ElWindow::ElWindow(const std::string &_name, const std::pair<int, int> _sz, const std::pair<int, int> _gridsz) 
         : name(_name), sz(_sz), gridsz(_gridsz) {
     
     auto [width, height] = sz;
-    set_default_size(width, height);
+    set_size_request(width, height);
 
     auto [rows, columns] = gridsz;
-     _grid.set_margin(10);
-    _grid.set_row_spacing(10);
-    _grid.set_column_spacing(10);
-    _grid.set_row_homogeneous(true);
-    _grid.set_column_homogeneous(true);
+    set_margin(10);
+    set_row_spacing(10);
+    set_column_spacing(10);
+    set_row_homogeneous(true);
+    set_column_homogeneous(true);
     auto fictiveel = Gtk::make_managed<Gtk::Box>();
-    _grid.attach(*fictiveel, 0, 0, columns, rows);
-    set_child(_grid);
+    attach(*fictiveel, 0, 0, columns, rows);
+
+    load_modules();
 }
 
-void Window::add_module(const moduleinfo &mod) {
+
+std::pair<bool, std::string> check_desposition(std::vector<moduleinfo> &vec, std::pair<int, int> mxsz) {
+    std::vector<moduleinfo> res = vec;
+    vec.clear();
+    std::set<std::pair<int, int>> cgrid;
+    for (auto mod : res) {
+        if (cgrid.count(mod.pos)) return {false, "Error: duplicate element positions"};
+        if (mod.pos.first >= mxsz.first || mod.pos.second >= mxsz.second) return {false, "Error: position out of range"};
+        cgrid.insert(mod.pos);
+        vec.push_back(mod);
+    }
+    return {true, "Correct"};
+}
+
+
+void load_module(const std::string &path, std::vector<moduleinfo> &res, std::pair<int, int> mxsz) {
+    auto mod = cfg::get(path);
+    res = std::vector<moduleinfo>();
+    try {
+        if (mod.IsMap()) {
+            for (const auto &config : mod) {
+                std::pair<int, int> pos(config.second["row"].as<int>(), config.second["column"].as<int>());
+                auto cpath = cfg::fixpath(getstring(config.second, "path"), "modules");
+                res.push_back(moduleinfo(config.first.as<std::string>(), pos, cpath));
+            }
+        }
+        auto [ver, msg] = check_desposition(res, mxsz);
+        if (!ver) { 
+            Logger::error(msg);
+            Notifier::notify(msg, "error");
+            Notifier::notify("Fix config and reload app", "warning");
+        }
+
+        Logger::debug("Loaded module: " + path);
+    } catch (const YAML::Exception &e) {
+        Logger::error("Error while loading module: " + path + ", error: " + std::string(e.what()));
+    } catch (...) {
+        Logger::error("Error while loading module: " + path);
+    }
+}
+
+
+void ElWindow::load_modules() {
+    load_module("modules." + name, modules, gridsz);
+}
+
+
+void ElWindow::setup() {
+    for (const auto &mod : modules) {
+        add_module(mod);
+    }
+    add_css_class("window");
+    add_css_class(name);
+}
+
+
+void ElWindow::add_module(const moduleinfo &mod) {
     auto module = Gtk::make_managed<Module>(mod);
     module->reload_styles();
 
     auto [row, col] = module->getpos();
-    _grid.attach(*module, col, row, 1, 1);
+    attach(*module, col, row, 1, 1);
 }
 
-void Window::arrange_modules(int columns) {
-    auto children = _grid.get_children();
+// not shure this is needful
+void ElWindow::arrange_modules(int columns) {
+    auto children = get_children();
     // for (auto ch : children) _grid.remove(*ch);
 
     for (size_t i = 0; i < children.size(); i++) {
-        _grid.attach(*dynamic_cast<Gtk::Widget*>(children[i]), i % columns, i / columns);
+        attach(*dynamic_cast<Gtk::Widget*>(children[i]), i % columns, i / columns);
     }
 }
 

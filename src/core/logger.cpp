@@ -1,3 +1,4 @@
+#include "tools.hpp"
 #include "logger.hpp"
 #include <iostream>
 #include <chrono>
@@ -15,13 +16,16 @@ void Logger::init(const std::string &log_file_path) {
     }
 }
 
-bool Logger::set_log_file(const std::string &log_file_path) {
+bool Logger::set_log_file(std::string log_file_path) {
     if (log_file.is_open()) {
         log_file.close();
     }
+    auto prpath = getExecutablePath();
+    for (int i = 0; i < 4; i++) prpath.pop_back();
+    log_file_path = (log_file_path[0] == '/') ? log_file_path : joinpath({prpath, log_file_path});
     log_file.open(log_file_path, std::ios::app);
     if (!log_file.is_open()) {
-        std::cerr << "Failed to open log file! (filepath" << log_file_path << ")" << std::endl;
+        std::cerr << "Failed to open log file! (filepath " << log_file_path << ")" << std::endl;
         return false;
     }
     return true;

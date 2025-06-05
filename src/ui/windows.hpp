@@ -6,21 +6,26 @@
 
 
 struct moduleinfo;
+class ElWindow;
 
 class MainWindow : public Gtk::ApplicationWindow {
 public:
     MainWindow(const Glib::RefPtr<Gtk::Application> &app);
 
-    void add_module(const moduleinfo &mod);
-    void arrange_modules(int columns = 3);
+    // void add_module(const moduleinfo &mod);
+    // void arrange_modules(int columns = 3);
+    void add_window(ElWindow *win, const std::pair<int, int> pos);
 private:
     Gtk::Grid _grid;
 };
 
 
-class Window : public Gtk::Window {
+class ElWindow : public Gtk::Grid {
 public:
-    Window(const std::string &name, const std::pair<int, int> sz, const std::pair<int, int> gridsz);
+    ElWindow(const std::string &name, const std::pair<int, int> sz, const std::pair<int, int> gridsz);
+
+    void load_modules();
+    void setup();
 
     void add_module(const moduleinfo &mod);
     void arrange_modules(int columns = 3);
@@ -28,7 +33,8 @@ private:
     std::string name;
     std::pair<int, int> sz;
     std::pair<int, int> gridsz;
-    Gtk::Grid _grid;
+
+    std::vector<moduleinfo>  modules;
 };
 
 class Module : public Gtk::Button {

@@ -42,6 +42,7 @@ if [ $f_clear == 1 ]; then
     cd $dst
     sudo rm -R "$name"
     cd $curd
+    sudo unlink "/usr/bin/vela"
 fi
 
 # cp sources
@@ -50,12 +51,16 @@ sudo cp -R $src $dst
 # create file with path
 dst+="$name"
 cd $dst
-echo "$dst" | sudo tee "src/projectpath.txt"
+# echo "$dst" | sudo tee "src/projectpath.txt"
 
 # cmake .. & make
 cd "build"
 sudo cmake ..
 sudo make
+
+sudo touch "$dst/build/vela.log"
+sudo chmod a+w "$dst/build/vela.log"
+
 
 # create link to ./Vela
 execfile="$(pwd)/Vela"
