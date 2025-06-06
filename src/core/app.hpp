@@ -1,7 +1,6 @@
 #pragma once
 
 #include "../ui/windows.hpp"
-#include <gtkmm.h>
 #include <yaml-cpp/yaml.h>
 #include <memory>
 #include <vector>

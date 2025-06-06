@@ -1,6 +1,7 @@
 #pragma once
 
-#include <gtkmm.h>
+// #include <gtkmm.h>
+#include <gtkmm-4.0/gtkmm.h>
 #include <yaml-cpp/yaml.h>
 #include <string>
 
@@ -20,9 +21,9 @@ private:
 };
 
 
-class ElWindow : public Gtk::Grid {
+class ElWindow : public Gtk::Overlay {
 public:
-    ElWindow(const std::string &name, const std::pair<int, int> sz, const std::pair<int, int> gridsz);
+    ElWindow(const std::string &name, const std::pair<int, int> sz, const std::pair<int, int> gridsz, int iconsize=72);
 
     void load_modules();
     void setup();
@@ -33,6 +34,11 @@ private:
     std::string name;
     std::pair<int, int> sz;
     std::pair<int, int> gridsz;
+    int iconsize;
+
+    Gtk::Grid *_grid;
+    Gtk::DrawingArea *focus_frame;
+    Gdk::RGBA frame_color1, frame_color2;
 
     std::vector<moduleinfo>  modules;
 };
@@ -63,5 +69,6 @@ struct moduleinfo {
     int icon_size = 72;
     std::string path;
 
-    moduleinfo(const std::string &_name, std::pair<int, int> _pos, const std::string &_path) : name(_name), pos(_pos), path(_path) {}
+    moduleinfo(const std::string &_name, std::pair<int, int> _pos, int _icon_size, const std::string &_path) 
+        : name(_name), pos(_pos), icon_size(_icon_size), path(_path) {}
 };

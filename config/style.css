@@ -8,7 +8,9 @@
     --bk-color-elem: rgba(43, 46, 81, 0.33);
     --bk-color-elem-2: rgba(31, 34, 66, 0.6);
 
-    --color-focus-border-1: rgba();
+    /* drfine this in .yaml config */
+    --color-focus-border-1: rgba(42, 206, 201, 1);
+    --color-focus-border-2: rgba(57, 212, 109, 1);
 }
 
 
@@ -18,34 +20,6 @@
     border: none;
     padding: unset;
     margin: unset;
-}
-
-
-@keyframes border-glow {
-    0% {
-        border-image-source: linear-gradient(to top right, #2acec9, #39d46d);
-    }   
-    50% {
-        border-image-source: linear-gradient(135deg, #2acec9, #39d46d);
-    } 
-    100% {
-        border-image-source: linear-gradient(to bottom right, #2acec9, #39d46d);
-    }
-}
-
-
-.window {
-    border: 2px solid transparent;
-    transition: border-radius 300ms ease;
-}
-.window:hover {
-    border-radius: 8px;
-    border-image-slice: 1;
-    border-image-source: linear-gradient(to top right, #2acec9, #39d46d);
-    transition: border-image-source 300ms ease;
-    /* border-image-source: linear-gradient(to top right, #ce532a, #5d39d4); */
-    animation: border-glow 1s;
-    animation-delay: 300ms;
 }
 
 
@@ -59,24 +33,28 @@
     border-top-left-radius: var(--border-radius);
     border-bottom-left-radius: var(--border-radius);
     background-color: var(--bk-color);
+    margin-right: 10px;
 }
 
 .right {
     border-top-right-radius: var(--border-radius);
     border-bottom-right-radius: var(--border-radius);
     background-color: var(--bk-color);
+    margin-left: 10px;
 }
 
 .top {
     border-top-left-radius: var(--border-radius);
     border-top-right-radius: var(--border-radius);
     background-color: var(--bk-color);
+    margin-bottom: 10px;
 }
 
 .bottom {
     border-bottom-left-radius: var(--border-radius);
     border-bottom-right-radius: var(--border-radius);
     background-color: var(--bk-color);
+    margin-top: 10px;
 }
 
 .element {

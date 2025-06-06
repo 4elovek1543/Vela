@@ -77,10 +77,11 @@ void Application::setup() {
     main_window = Gtk::make_managed<MainWindow>(app);
     main_window->add_css_class("base");
 
-    std::pair<int, int> sz, gridsz;
+    std::pair<int, int> sz, gridsz; int iconsize;
     sz = std::pair<int, int>(cfg::getint("window.width", 800), cfg::getint("window.height", 600));
     gridsz = std::pair<int, int>(cfg::getint("window.rows", 4), cfg::getint("window.columns", 5));
-    centre_window = Gtk::make_managed<ElWindow>("main", sz, gridsz);
+    iconsize = cfg::getint("window.size", 72);
+    centre_window = Gtk::make_managed<ElWindow>("main", sz, gridsz, iconsize);
     centre_window->setup();
     centre_window->set_vexpand(true);
     centre_window->set_hexpand(true);
@@ -88,28 +89,32 @@ void Application::setup() {
     if (cfg::getbool("bars.left")) {
         sz = std::pair<int, int>(cfg::getint("bar_left.width", 50), cfg::getint("window.height", 600));
         gridsz = std::pair<int, int>(cfg::getint("bar_left.rows", 4), 1);
-        bar_left = Gtk::make_managed<ElWindow>("left", sz, gridsz);        
+        iconsize = cfg::getint("bar_left.size", 72);
+        bar_left = Gtk::make_managed<ElWindow>("left", sz, gridsz, iconsize);        
         bar_left->setup();
         main_window->add_window(bar_left, {1, 0});
     }
     if (cfg::getbool("bars.right")) {
         sz = std::pair<int, int>(cfg::getint("bar_right.width", 50), cfg::getint("window.height", 600));
         gridsz = std::pair<int, int>(cfg::getint("bar_right.rows", 4), 1);
-        bar_right = Gtk::make_managed<ElWindow>("right", sz, gridsz);        
+        iconsize = cfg::getint("bar_right.size", 72);
+        bar_right = Gtk::make_managed<ElWindow>("right", sz, gridsz, iconsize);        
         bar_right->setup();
         main_window->add_window(bar_right, {1, 2});
     }
     if (cfg::getbool("bars.top")) {
         sz = std::pair<int, int>(cfg::getint("window.width", 800), cfg::getint("bar_top.height", 50));
         gridsz = std::pair<int, int>(1, cfg::getint("bar_top.columns", 5));
-        bar_top = Gtk::make_managed<ElWindow>("top", sz, gridsz);        
+        iconsize = cfg::getint("bar_top.size", 72);
+        bar_top = Gtk::make_managed<ElWindow>("top", sz, gridsz, iconsize);        
         bar_top->setup();
         main_window->add_window(bar_top, {0, 1});
     }
     if (cfg::getbool("bars.bottom")) {
         sz = std::pair<int, int>(cfg::getint("window.width", 800), cfg::getint("bar_bottom.height", 50));
         gridsz = std::pair<int, int>(1, cfg::getint("bar_bottom.columns", 5));
-        bar_bottom = Gtk::make_managed<ElWindow>("bottom", sz, gridsz);        
+        iconsize = cfg::getint("bar_bottom.size", 72);
+        bar_bottom = Gtk::make_managed<ElWindow>("bottom", sz, gridsz, iconsize);        
         bar_bottom->setup();
         main_window->add_window(bar_bottom, {2, 1});
     }

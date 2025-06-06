@@ -47,6 +47,7 @@ YAML::Node getnode(YAML::Node config, const std::string &path, YAML::Node defval
             return defval;
         }
     }
+    if (res.IsNull()) return defval;
     return res;
 }
 
@@ -57,6 +58,7 @@ int cfg::getint(const std::string &path, int defval) {
 int getint(YAML::Node config, const std::string &path, int defval) {
     auto res = getnode(config, path);
     try {
+        if (res.IsNull()) return defval;
         return res.as<int>();
     } catch (const YAML::BadConversion& e) {
         Logger::error("Error in getint: " + std::string(e.what()));
@@ -71,6 +73,7 @@ float cfg::getfloat(const std::string &path, float defval) {
 float getfloat(YAML::Node config, const std::string &path, float defval) {
     auto res = getnode(config, path);
     try {
+        if (res.IsNull()) return defval;
         return res.as<float>();
     } catch (const YAML::BadConversion& e) {
         Logger::error("Error in getfloat: " + std::string(e.what()));
@@ -85,6 +88,7 @@ bool cfg::getbool(const std::string &path, bool defval) {
 bool getbool(YAML::Node config, const std::string &path, bool defval) {
     auto res = getnode(config, path);
     try {
+        if (res.IsNull()) return defval;
         return res.as<bool>();
     } catch (const YAML::BadConversion& e) {
         Logger::error("Error in getbool: " + std::string(e.what()));
@@ -99,6 +103,7 @@ std::string cfg::getstring(const std::string &path, std::string defval) {
 std::string getstring(YAML::Node config, const std::string &path, std::string defval) {
     auto res = getnode(config, path);
     try {
+        if (res.IsNull()) return defval;
         return res.as<std::string>();
     } catch (const YAML::BadConversion& e) {
         Logger::error("Error in getstring: " + std::string(e.what()));

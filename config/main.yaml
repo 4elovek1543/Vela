@@ -6,6 +6,10 @@ app:
   scripts: "config/scripts/"
   static: "config/static/"
 
+  # support rgb and rgba format
+  --color-focus-border-1: "rgba(42, 206, 201, 1)"
+  --color-focus-border-2: "rgba(57, 212, 109, 1)"
+
   constants:
     # define constants you can use in "action" of modules like $constant (exept "script")
     terminal: "kitty"
@@ -20,26 +24,32 @@ bars:
 window:
   width: 600
   height: 400
+  # size of icon of module 
+  size: &size 72
   rows: 4
-  columns: 6
+  columns: 5
   # arifmetic centre of chosed modules matching to centr_pos
   centring_obj: ["main", "left"]
   # centre of window - 0, 0, first number increace to move right, second to move up 
   centr_pos: [0, 0] 
 
 bar_left:
+  size: 50
   width: 50
   rows: 4
 
 bar_right:
+  size: *size
   width: 50
   rows: 4
 
 bar_top:
+  size: 40
   height: 50
   columns: 6
 
 bar_bottom:
+  size: *size
   height: 50
   columns: 6
 
