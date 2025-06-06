@@ -1,4 +1,5 @@
 #include "windows.hpp"
+#include "../core/tools.hpp"
 #include "../core/logger.hpp"
 #include "../core/notifier.hpp"
 #include "../core/config_manager.hpp"
@@ -40,20 +41,56 @@ void MainWindow::add_window(ElWindow *win, const std::pair<int, int> pos) {
 // =============================================================================================
 
 
-ElWindow::ElWindow(const std::string &_name, const std::pair<int, int> _sz, const std::pair<int, int> _gridsz) 
-        : name(_name), sz(_sz), gridsz(_gridsz) {
+ElWindow::ElWindow(const std::string &_name, const std::pair<int, int> _sz, const std::pair<int, int> _gridsz, int _iconsize) 
+        : name(_name), sz(_sz), gridsz(_gridsz), iconsize(_iconsize) {
     
     auto [width, height] = sz;
     set_size_request(width, height);
 
     auto [rows, columns] = gridsz;
-    set_margin(10);
-    set_row_spacing(10);
-    set_column_spacing(10);
-    set_row_homogeneous(true);
-    set_column_homogeneous(true);
+    _grid = Gtk::make_managed<Gtk::Grid>();
+    _grid->set_margin(5);
+    _grid->set_row_spacing(10);
+    _grid->set_column_spacing(10);
+    _grid->set_row_homogeneous(true);
+    _grid->set_column_homogeneous(true);
     auto fictiveel = Gtk::make_managed<Gtk::Box>();
-    attach(*fictiveel, 0, 0, columns, rows);
+    _grid->attach(*fictiveel, 0, 0, columns, rows);
+
+
+    focus_frame = Gtk::make_managed<Gtk::DrawingArea>();
+    focus_frame->set_visible(false);
+    focus_frame->set_can_target(false);
+    add_overlay(*focus_frame);
+    
+
+    auto hover_controller = Gtk::EventControllerMotion::create();
+    hover_controller->signal_enter().connect([this](double, double) {
+        focus_frame->set_visible(true);
+    });
+    hover_controller->signal_leave().connect([this]() {
+        focus_frame->set_visible(false);
+    });
+    add_controller(hover_controller);
+
+    
+    focus_frame->set_draw_func([this](const Cairo::RefPtr<Cairo::Context>& cr, int w, int h) {
+        cr->set_line_width(2.0);
+        cr->arc(12, 12, 10, M_PI, 1.5 * M_PI); // Левый верхний
+        cr->arc(w - 12, 12, 10, 1.5 * M_PI, 2 * M_PI); // Правый верхний
+        cr->arc(w - 12, h - 12, 10, 0, 0.5 * M_PI); // Правый нижний
+        cr->arc(12, h - 12, 10, 0.5 * M_PI, M_PI); // Левый нижний
+        cr->close_path();
+
+        auto gradient = Cairo::LinearGradient::create(0, 0, w, h);
+        gradient->add_color_stop_rgba(0, frame_color1.get_red(), frame_color1.get_green(), frame_color1.get_blue(), frame_color1.get_alpha());
+        gradient->add_color_stop_rgba(1, frame_color2.get_red(), frame_color2.get_green(), frame_color2.get_blue(), frame_color2.get_alpha());
+        cr->set_source(gradient);
+        cr->stroke();
+    });
+
+
+    set_child(*_grid);
 
     load_modules();
 }
@@ -73,7 +110,7 @@ std::pair<bool, std::string> check_desposition(std::vector<moduleinfo> &vec, std
 }
 
 
-void load_module(const std::string &path, std::vector<moduleinfo> &res, std::pair<int, int> mxsz) {
+void load_module(const std::string &path, std::vector<moduleinfo> &res, std::pair<int, int> mxsz, int iconszie) {
     auto mod = cfg::get(path);
     res = std::vector<moduleinfo>();
     try {
@@ -81,7 +118,7 @@ void load_module(const std::string &path, std::vector<moduleinfo> &res, std::pai
             for (const auto &config : mod) {
                 std::pair<int, int> pos(config.second["row"].as<int>(), config.second["column"].as<int>());
                 auto cpath = cfg::fixpath(getstring(config.second, "path"), "modules");
-                res.push_back(moduleinfo(config.first.as<std::string>(), pos, cpath));
+                res.push_back(moduleinfo(config.first.as<std::string>(), pos, iconszie, cpath));
             }
         }
         auto [ver, msg] = check_desposition(res, mxsz);
@@ -101,7 +138,51 @@ void load_module(const std::string &path, std::vector<moduleinfo> &res, std::pai
 
 
 void ElWindow::load_modules() {
-    load_module("modules." + name, modules, gridsz);
+    load_module("modules." + name, modules, gridsz, iconsize);
+}
+
+
+float getframe(const std::string &val) {
+    float res = 0.0;
+    for (auto x : val) {
+        if (x == ' ') continue;
+        res *= 10;
+        res += (x - '0');
+    }
+    return res / 256.0;
+}
+
+
+bool load_color(const std::string &name, Gdk::RGBA &res) {
+    auto ini = cfg::getstring("app." + name, "");
+    if (ini == "") return false;
+    auto val = split(ini, '(')[1];
+    val.pop_back();
+    auto clr = split(val, ',');
+    if (clr.size() < 3 || clr.size() > 4) return false;
+    try {
+        float r = getframe(clr[0]);
+        float g = getframe(clr[1]);
+        float b = getframe(clr[2]);
+        float a = 1.0;
+        if (clr.size() == 4) {
+            int i = 0;
+            if (clr[3][0] == ' ') i++;
+            if (clr[3][i] != '1') {
+                float xx = 0.0;
+                i += 2; 
+                int sz = clr[3].size() - i;
+                for (; i < (int)clr[3].size(); i++) xx*=10, xx += (clr[3][i] - '0');
+                for (int j = 0; j < sz; j++) xx /= 10.0;
+                a = xx;
+            }
+        }
+        res.set_rgba(r, g, b, a);
+        return true;
+    } catch (...) {
+        Logger::warning("Error at loading color with name " + name + ", use default");
+        return false;
+    }
 }
 
 
@@ -111,6 +192,23 @@ void ElWindow::setup() {
     }
     add_css_class("window");
     add_css_class(name);
+    
+    auto style_context = get_style_context();
+    // if (style_context->lookup_color("--color-focus-border-1", frame_color1)) {} 
+    if (load_color("--color-focus-border-1", frame_color1)) {} 
+    else {
+        Logger::warning("Color --color-focus-border-1 not found");
+        frame_color1.set_rgba(0.16, 0.80, 0.78, 1.0);
+    }
+    // if (style_context->lookup_color("--color-focus-border-2", frame_color2)) {} 
+    if (load_color("--color-focus-border-2", frame_color2)) {} 
+    else {
+        Logger::warning("Color --color-focus-border-2 not found");
+        frame_color2.set_rgba(0.22, 0.83, 0.42, 1.0);
+    }
+
+    Logger::debug(frame_color1.to_string());
+    Logger::debug(frame_color2.to_string());
 }
 
 
@@ -119,7 +217,7 @@ void ElWindow::add_module(const moduleinfo &mod) {
     module->reload_styles();
 
     auto [row, col] = module->getpos();
-    attach(*module, col, row, 1, 1);
+    _grid->attach(*module, col, row, 1, 1);
 }
 
 // not shure this is needful
@@ -128,7 +226,7 @@ void ElWindow::arrange_modules(int columns) {
     // for (auto ch : children) _grid.remove(*ch);
 
     for (size_t i = 0; i < children.size(); i++) {
-        attach(*dynamic_cast<Gtk::Widget*>(children[i]), i % columns, i / columns);
+        _grid->attach(*dynamic_cast<Gtk::Widget*>(children[i]), i % columns, i / columns);
     }
 }
 
