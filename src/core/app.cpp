@@ -1,4 +1,5 @@
 #include "app.hpp"
+#include "tools.hpp"
 #include "logger.hpp"
 #include "notifier.hpp"
 #include "config_manager.hpp"
@@ -9,51 +10,6 @@
 
 Application::Application() : app(Gtk::Application::create("org.vela.launcher", Gio::Application::Flags::NON_UNIQUE)) {}
 
-// // TODO not here
-// std::pair<bool, std::string> check_desposition(std::vector<moduleinfo> &vec, std::pair<int, int> mxsz) {
-//     std::vector<moduleinfo> res = vec;
-//     vec.clear();
-//     std::set<std::pair<int, int>> cgrid;
-//     for (auto mod : res) {
-//         if (cgrid.count(mod.pos)) return {false, "Error: duplicate element positions"};
-//         if (mod.pos.first >= mxsz.first || mod.pos.second >= mxsz.second) return {false, "Error: position out of range"};
-//         cgrid.insert(mod.pos);
-//         vec.push_back(mod);
-//     }
-//     return {true, "Correct"};
-// }
-
-// // TODO not here
-// void load_module(const std::string &path, std::vector<moduleinfo> &res, std::pair<int, int> mxsz) {
-//     auto mod = cfg::get(path);
-//     res = std::vector<moduleinfo>();
-//     try {
-//         if (mod.IsMap()) {
-//             for (const auto &config : mod) {
-//                 std::pair<int, int> pos(config.second["row"].as<int>(), config.second["column"].as<int>());
-//                 auto cpath = cfg::fixpath(getstring(config.second, "path"), "modules");
-//                 res.push_back(moduleinfo(config.first.as<std::string>(), pos, cpath));
-//             }
-//         }
-//         auto [ver, msg] = check_desposition(res, mxsz);
-//         if (!ver) { 
-//             Logger::error(msg);
-//             Notifier::notify(msg, "error");
-//             Notifier::notify("Fix config and reload app", "warning");
-//         }
-
-//         Logger::debug("Loaded module: " + path);
-//     } catch (const YAML::Exception &e) {
-//         Logger::error("Error while loading module: " + path + ", error: " + std::string(e.what()));
-//     } catch (...) {
-//         Logger::error("Error while loading module: " + path);
-//     }
-// }
-
-// void Application::load_modules() {
-//     mxsz_main = {cfg::getint("window.rows", 4), cfg::getint("window.columns", 5)};
-//     load_module("modules.main", modules_main, mxsz_main);
-// }
 
 void Application::load_styles() {
     css_provider = Gtk::CssProvider::create();
@@ -128,6 +84,13 @@ int Application::run(bool set_float) {
             main_window->set_name("Vela");
         }
         main_window->present();
+    });
+    app->signal_shutdown().connect([]() {
+        if (Logger::get_level() != LogLevel::DEBUG) {
+            clear_tmp();
+        } else {
+            Logger::debug("Running into debug mode, tmp files are not deleted");
+        }
     });
     return app->run();
 }

@@ -8,13 +8,12 @@
 
 struct moduleinfo;
 class ElWindow;
+class FocusFrame;
 
 class MainWindow : public Gtk::ApplicationWindow {
 public:
     MainWindow(const Glib::RefPtr<Gtk::Application> &app);
 
-    // void add_module(const moduleinfo &mod);
-    // void arrange_modules(int columns = 3);
     void add_window(ElWindow *win, const std::pair<int, int> pos);
 private:
     Gtk::Grid _grid;
@@ -37,11 +36,31 @@ private:
     int iconsize;
 
     Gtk::Grid *_grid;
-    Gtk::DrawingArea *focus_frame;
-    Gdk::RGBA frame_color1, frame_color2;
+    FocusFrame *focus_frame;
 
     std::vector<moduleinfo>  modules;
 };
+
+
+class FocusFrame : public Gtk::DrawingArea {
+public:
+    FocusFrame(const std::string &col1_name, const std::string &col2_name, double farme_radius=10, double frame_ainm_duration=100);
+
+    void setup();
+    const Glib::RefPtr<Gtk::EventControllerMotion>&  get_hover_controller() const;
+    void start_frame_animation(bool fade_in);
+private:
+    std::string col1_name, col2_name;
+    Gdk::RGBA color1, color2;
+    double alpha = 0.0;
+    double radius;
+    double fade_duration;
+    sigc::connection frame_animation;
+
+    Glib::RefPtr<Gtk::EventControllerMotion> hover_controller;
+
+};
+
 
 class Module : public Gtk::Button {
 public:
@@ -58,6 +77,7 @@ private:
     std::string icon;
     std::string tooltip;
     std::string action;
+    bool need_sudo;
     std::pair<int, int> pos;
     std::vector<std::string> style_classes;
 };

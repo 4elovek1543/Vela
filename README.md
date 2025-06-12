@@ -28,7 +28,7 @@ You need to describe row, column and path to .yaml config of your module here (s
 
 Then you need to describe config for your module: go to folder config/modules and create new .yaml file.
 
-Here you need to describe name, icon (relative path to icon starts from "config/static/"), tooltip, action, and list of additional style classes, defined at style.css.
+Here you need to describe name, icon (relative path to icon starts from "config/static/"), tooltip, action, need_sudo: true if it must runned under sudo, and list of additional style classes, defined at style.css.
 
 action - when you press module on your screen, app will execute action on the shell. Here you can use constants you define in app/constants in main config like $constant_name and \$script:script_name.sh to run script in config/scripts via bash.
 

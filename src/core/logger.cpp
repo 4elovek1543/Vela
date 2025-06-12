@@ -35,6 +35,10 @@ void Logger::set_level(LogLevel level) {
     Logger::current_level = level;
 }
 
+LogLevel Logger::get_level() {
+    return Logger::current_level;
+}
+
 void Logger::log(LogLevel level, const std::string &message) {
     if (level < current_level) return;
 
