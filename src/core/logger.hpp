@@ -18,6 +18,7 @@ public:
     static bool set_log_file(std::string log_file_path);
 
     static void set_level(LogLevel level);
+    static LogLevel get_level();
 
     static void debug(const std::string& message);
     static void info(const std::string& message);

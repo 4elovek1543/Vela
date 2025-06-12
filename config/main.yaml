@@ -9,6 +9,10 @@ app:
   # support rgb and rgba format
   --color-focus-border-1: "rgba(42, 206, 201, 1)"
   --color-focus-border-2: "rgba(57, 212, 109, 1)"
+  # time in ms
+  --focus-border-fade-duration: 100
+  # border radius in px
+  --focus-border-radius: 10
 
   constants:
     # define constants you can use in "action" of modules like $constant (exept "script")
@@ -35,6 +39,7 @@ window:
 
 bar_left:
   size: 50
+  # size will autoexpand if modules will demand it
   width: 50
   rows: 4
 

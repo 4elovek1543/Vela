@@ -4,5 +4,6 @@ terminal_example:
   tooltip: "Launch terminal"
   # use here $name to get value from app.constants 
   action: "$terminal"
+  need_sudo: false
   style_classes: []
 

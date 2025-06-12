@@ -8,7 +8,7 @@ set(CMAKE_CXX_FLAGS "-Wall -Wextra -Wshadow -O2")
 find_package(PkgConfig REQUIRED)
 
 
-set(REQUIRED_PACKAGES gtkmm yaml-cpp)
+set(REQUIRED_PACKAGES gtkmm yaml-cpp zenity hicolor-icon-theme)
 find_program(PACMAN pacman)
 if(PACMAN)
     # Проверка каждого пакета

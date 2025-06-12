@@ -6,6 +6,8 @@
 #include <unistd.h>
 #include <sys/wait.h>
 #include <sigc++/trackable.h> 
+#include <chrono>
+#include <thread> 
 
 
 
@@ -14,6 +16,9 @@ MainWindow::MainWindow(const Glib::RefPtr<Gtk::Application> &app) : Gtk::Applica
     int width = cfg::getint("window.width", 800);
     int height = cfg::getint("window.height", 600);
     set_default_size(width, height);
+
+    // set_decorated(false);
+    // set_opacity(0.5);
 
     _grid.set_vexpand(true);
     _grid.set_hexpand(true);
@@ -58,36 +63,13 @@ ElWindow::ElWindow(const std::string &_name, const std::pair<int, int> _sz, cons
     _grid->attach(*fictiveel, 0, 0, columns, rows);
 
 
-    focus_frame = Gtk::make_managed<Gtk::DrawingArea>();
-    focus_frame->set_visible(false);
-    focus_frame->set_can_target(false);
+    double frame_radius = cfg::getfloat("app.--focus-border-radius", 10);
+    double frame_fade_duration = cfg::getfloat("app.--focus-border-fade-duration", 100);
+    focus_frame = Gtk::make_managed<FocusFrame>("--color-focus-border-1", "--color-focus-border-2", frame_radius, frame_fade_duration);
+
+    add_controller(focus_frame->get_hover_controller());
+
     add_overlay(*focus_frame);
-    
-
-    auto hover_controller = Gtk::EventControllerMotion::create();
-    hover_controller->signal_enter().connect([this](double, double) {
-        focus_frame->set_visible(true);
-    });
-    hover_controller->signal_leave().connect([this]() {
-        focus_frame->set_visible(false);
-    });
-    add_controller(hover_controller);
-
-    
-    focus_frame->set_draw_func([this](const Cairo::RefPtr<Cairo::Context>& cr, int w, int h) {
-        cr->set_line_width(2.0);
-        cr->arc(12, 12, 10, M_PI, 1.5 * M_PI); // Левый верхний
-        cr->arc(w - 12, 12, 10, 1.5 * M_PI, 2 * M_PI); // Правый верхний
-        cr->arc(w - 12, h - 12, 10, 0, 0.5 * M_PI); // Правый нижний
-        cr->arc(12, h - 12, 10, 0.5 * M_PI, M_PI); // Левый нижний
-        cr->close_path();
-
-        auto gradient = Cairo::LinearGradient::create(0, 0, w, h);
-        gradient->add_color_stop_rgba(0, frame_color1.get_red(), frame_color1.get_green(), frame_color1.get_blue(), frame_color1.get_alpha());
-        gradient->add_color_stop_rgba(1, frame_color2.get_red(), frame_color2.get_green(), frame_color2.get_blue(), frame_color2.get_alpha());
-        cr->set_source(gradient);
-        cr->stroke();
-    });
 
 
     set_child(*_grid);
@@ -142,73 +124,14 @@ void ElWindow::load_modules() {
 }
 
 
-float getframe(const std::string &val) {
-    float res = 0.0;
-    for (auto x : val) {
-        if (x == ' ') continue;
-        res *= 10;
-        res += (x - '0');
-    }
-    return res / 256.0;
-}
-
-
-bool load_color(const std::string &name, Gdk::RGBA &res) {
-    auto ini = cfg::getstring("app." + name, "");
-    if (ini == "") return false;
-    auto val = split(ini, '(')[1];
-    val.pop_back();
-    auto clr = split(val, ',');
-    if (clr.size() < 3 || clr.size() > 4) return false;
-    try {
-        float r = getframe(clr[0]);
-        float g = getframe(clr[1]);
-        float b = getframe(clr[2]);
-        float a = 1.0;
-        if (clr.size() == 4) {
-            int i = 0;
-            if (clr[3][0] == ' ') i++;
-            if (clr[3][i] != '1') {
-                float xx = 0.0;
-                i += 2; 
-                int sz = clr[3].size() - i;
-                for (; i < (int)clr[3].size(); i++) xx*=10, xx += (clr[3][i] - '0');
-                for (int j = 0; j < sz; j++) xx /= 10.0;
-                a = xx;
-            }
-        }
-        res.set_rgba(r, g, b, a);
-        return true;
-    } catch (...) {
-        Logger::warning("Error at loading color with name " + name + ", use default");
-        return false;
-    }
-}
-
-
 void ElWindow::setup() {
     for (const auto &mod : modules) {
         add_module(mod);
     }
     add_css_class("window");
     add_css_class(name);
-    
-    auto style_context = get_style_context();
-    // if (style_context->lookup_color("--color-focus-border-1", frame_color1)) {} 
-    if (load_color("--color-focus-border-1", frame_color1)) {} 
-    else {
-        Logger::warning("Color --color-focus-border-1 not found");
-        frame_color1.set_rgba(0.16, 0.80, 0.78, 1.0);
-    }
-    // if (style_context->lookup_color("--color-focus-border-2", frame_color2)) {} 
-    if (load_color("--color-focus-border-2", frame_color2)) {} 
-    else {
-        Logger::warning("Color --color-focus-border-2 not found");
-        frame_color2.set_rgba(0.22, 0.83, 0.42, 1.0);
-    }
 
-    Logger::debug(frame_color1.to_string());
-    Logger::debug(frame_color2.to_string());
+    focus_frame->setup();
 }
 
 
@@ -233,6 +156,143 @@ void ElWindow::arrange_modules(int columns) {
 // =============================================================================================
 
 
+FocusFrame::FocusFrame(const std::string &_col1_name, const std::string &_col2_name, double frame_radius, double frame_ainm_duration)
+        : col1_name(_col1_name), col2_name(_col2_name), radius(frame_radius), fade_duration(frame_ainm_duration) {
+    set_visible(false);
+    set_can_target(false);
+    
+    hover_controller = Gtk::EventControllerMotion::create();
+    hover_controller->signal_enter().connect([this](double, double) {
+        set_visible(true);
+        start_frame_animation(true);
+    });
+    hover_controller->signal_leave().connect([this]() {
+        start_frame_animation(false);
+    });
+
+
+    set_draw_func([this](const Cairo::RefPtr<Cairo::Context>& cr, int w, int h) {
+        cr->set_line_width(2.0);
+        cr->arc(radius, radius, radius-2, M_PI, 1.5 * M_PI); // Левый верхний
+        cr->arc(w - radius, radius, radius-2, 1.5 * M_PI, 2 * M_PI); // Правый верхний
+        cr->arc(w - radius, h - radius, radius-2, 0, 0.5 * M_PI); // Правый нижний
+        cr->arc(radius, h - radius, radius-2, 0.5 * M_PI, M_PI); // Левый нижний
+        cr->close_path();
+
+        auto gradient = Cairo::LinearGradient::create(0, 0, w, h);
+        gradient->add_color_stop_rgba(0, color1.get_red(), color1.get_green(), color1.get_blue(), color1.get_alpha()*alpha);
+        gradient->add_color_stop_rgba(1, color2.get_red(), color2.get_green(), color2.get_blue(), color2.get_alpha()*alpha);
+        cr->set_source(gradient);
+        cr->stroke();
+    });
+}
+
+
+void FocusFrame::start_frame_animation(bool fade_in) {
+    const double step = 0.05;
+    const double interval = fade_duration * step;
+
+    if (frame_animation) {
+        frame_animation.disconnect();
+    }
+
+    frame_animation = Glib::signal_timeout().connect([this, step, fade_in]() {
+        alpha += (fade_in) ? step : -step;
+        alpha = std::clamp(alpha, 0.0, 1.0);
+
+        queue_draw();
+
+        if ((fade_in && alpha >= 1.0) || (!fade_in && alpha <= 0.0)) {
+            if (!fade_in) set_visible(false);
+            return false;
+        }
+        return true;
+    }, interval);
+}
+
+
+const Glib::RefPtr<Gtk::EventControllerMotion>&  FocusFrame::get_hover_controller() const {
+    return hover_controller;
+}
+
+
+float getfraction(const std::string &val) {
+    float res = 0.0;
+    for (auto x : val) {
+        if (x == ' ') continue;
+        res *= 10;
+        res += (x - '0');
+    }
+    return res / 256.0;
+}
+
+
+bool load_color(const std::string &name, Gdk::RGBA &res) {
+    auto ini = cfg::getstring("app." + name, "");
+    if (ini == "") return false;
+    auto val = split(ini, '(')[1];
+    val.pop_back();
+    auto clr = split(val, ',');
+    if (clr.size() < 3 || clr.size() > 4) return false;
+    try {
+        float r = getfraction(clr[0]);
+        float g = getfraction(clr[1]);
+        float b = getfraction(clr[2]);
+        float a = 1.0;
+        if (clr.size() == 4) {
+            int i = 0;
+            if (clr[3][0] == ' ') i++;
+            if (clr[3][i] != '1') {
+                float xx = 0.0;
+                i += 2; 
+                int sz = clr[3].size() - i;
+                for (; i < (int)clr[3].size(); i++) xx*=10, xx += (clr[3][i] - '0');
+                for (int j = 0; j < sz; j++) xx /= 10.0;
+                a = xx;
+            }
+        }
+        res.set_rgba(r, g, b, a);
+        return true;
+    } catch (...) {
+        Logger::warning("Error at loading color with name " + name + ", use default");
+        return false;
+    }
+}
+
+
+void FocusFrame::setup() {
+    auto css_provider = Gtk::CssProvider::create();
+    css_provider->load_from_data(".fix-border:hover { border-radius: " + std::to_string(radius) + "px; }");
+    Gtk::StyleContext::add_provider_for_display(
+        Gdk::Display::get_default(),
+        css_provider,
+        GTK_STYLE_PROVIDER_PRIORITY_APPLICATION
+    );
+    get_parent()->add_css_class("fix-border");
+
+
+    // auto style_context = get_style_context();
+    // if (style_context->lookup_color(col1_name, frame_color1)) {} 
+    if (load_color(col1_name, color1)) {} 
+    else {
+        Logger::warning("Color " + col1_name + " not found");
+        color1.set_rgba(0.16, 0.80, 0.78, 1.0);
+    }
+    // if (style_context->lookup_color(col2_name, frame_color2)) {} 
+    if (load_color(col2_name, color2)) {} 
+    else {
+        Logger::warning("Color " + col2_name + " not found");
+        color2.set_rgba(0.22, 0.83, 0.42, 1.0);
+    }
+
+    Logger::debug(color1.to_string());
+    Logger::debug(color2.to_string());
+}
+
+
+// =============================================================================================
+
+
 Module::Module(const moduleinfo &mod) : Module(mod.name, mod.pos, mod.icon_size, mod.path) {}
 
 
@@ -247,6 +307,8 @@ Module::Module(const std::string &_name, std::pair<int, int> _pos, int icon_size
         action = getstring(config, modulename + ".action");
         action = cfg::fill_from_constants(action);
         action = fill_from_scripts(action);
+
+        need_sudo = getbool(config, modulename + ".need_sudo", false);
 
         auto cstyles = getseq(config, modulename + ".style_classes");
         for (const auto &cls : cstyles) {
@@ -306,18 +368,17 @@ void Module::reload_styles() {
     }
 }
 
+
 void Module::execute() const {
     Logger::info("EXECUTE from [" + modulename + "]: " + action);
 
-    pid_t pid = fork();
-    if (pid == 0) {
-        setsid();
-
-        execl("/bin/sh", "sh", "-c", action.c_str(), NULL);
-
-        Logger::error("Failed to execute: " + action);
-        _exit(EXIT_FAILURE);
-    } else if (pid < 0) {
-        Logger::error("Failed to fork, execution failed!");
+    if (need_sudo) {
+        Logger::info("Need to run under sudo");
+        int res = execute_as_root(action);
+        if (res < 0) {
+            Logger::error("Execution under root failed, code: " + std::to_string(res));
+        } 
+    } else {
+        Glib::spawn_command_line_async(action);
     }
 }
