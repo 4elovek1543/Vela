@@ -5,3 +5,4 @@ config/scripts/*
 build/*
 !build/rebuild.sh
 !build/install.sh
+!build/uninstall.sh
