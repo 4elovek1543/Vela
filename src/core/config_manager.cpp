@@ -111,6 +111,16 @@ std::string getstring(YAML::Node config, const std::string &path, std::string de
     }
 }
 
+std::vector<YAML::Node> cfg::getseq(const std::string &path, std::vector<YAML::Node> defval) {
+    auto res = ::getseq(config, path, defval);
+    try {
+        return res;
+    } catch (const YAML::BadConversion& e) {
+        Logger::error("Error in getbool: " + std::string(e.what()));
+        return defval;
+    }
+}
+
 std::vector<YAML::Node> getseq(YAML::Node config, const std::string &path, std::vector<YAML::Node> defval) {
     auto node = getnode(config, path);
     std::vector<YAML::Node> res;

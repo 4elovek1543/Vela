@@ -16,6 +16,8 @@ public:
     static float getfloat(const std::string &path, float defval=0.0);
     static bool getbool(const std::string &path, bool defval=false);
     static std::string getstring(const std::string &path, std::string defval="");
+    static std::vector<YAML::Node> getseq(const std::string &path, std::vector<YAML::Node> defval=std::vector<YAML::Node>());
+
 
     static std::map<std::string, YAML::Node> load_constants();
     static std::string fill_from_constants(const std::string &val);
