@@ -119,7 +119,7 @@ void Application::fixposition() {
         return false;
     };
 
-    Glib::signal_timeout().connect(check_address, 1);
+    Glib::signal_timeout().connect(check_address, 100);
 }
 
 
