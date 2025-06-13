@@ -27,4 +27,5 @@ private:
     // void load_modules();
     void load_styles();
     void setup();
+    void fixposition();
 };

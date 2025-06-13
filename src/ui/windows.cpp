@@ -379,6 +379,19 @@ void Module::execute() const {
             Logger::error("Execution under root failed, code: " + std::to_string(res));
         } 
     } else {
-        Glib::spawn_command_line_async(action);
+        // Glib::spawn_command_line_async(action);
+        pid_t pid = fork(); 
+        if (pid == 0) {
+            setsid();
+
+            execl("/bin/sh", "sh", "-c", (action + add_logging(action)).c_str(), NULL);
+
+            Logger::error("Failed to execute: " + action);
+            _exit(EXIT_FAILURE);
+        } else if (pid < 0) {
+            Logger::error("Failed to fork, execution failed!");    
+        }
     }
+
+    Notifier::notify("address: " + get_window_address(), "info");
 }

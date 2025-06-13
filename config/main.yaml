@@ -32,9 +32,14 @@ window:
   size: &size 72
   rows: 4
   columns: 5
-  # arifmetic centre of chosed modules matching to centr_pos
-  centring_obj: ["main", "left"]
-  # centre of window - 0, 0, first number increace to move right, second to move up 
+
+  # use behaviour in position, default 0: 
+  # 0: window and cursor do not affect each other 
+  # 1: window will appear where cursor is
+  # 2: cursor will be moved where window is
+  position: 0
+  # centre of window - 0, 0, first number increace to move right, second to move down 
+  # it will be applied to position equal to 0 or 2, at position: 1 it will be ignored
   centr_pos: [0, 0] 
 
 bar_left:

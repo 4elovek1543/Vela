@@ -76,14 +76,64 @@ void Application::setup() {
     }
 }
 
+
+void Application::fixposition() {
+    int mode = cfg::getint("window.position", 0);
+    int x, y;
+    if (mode != 1) {
+        auto posl = cfg::getseq("window.centr_pos");
+        x = posl[0].as<int>();
+        y = posl[1].as<int>();
+    } else {
+        auto [cx, cy] = get_cursor_pos();
+        auto [mx, my] = get_monitor_size();
+        auto [w, h] = get_window_size();
+        auto [wx, wy] = get_window_pos();
+        x = std::clamp(cx - mx/2, -wx, mx - w - wx);
+        y = std::clamp(cy - my/2, -wy, my - h - wy);
+    }
+    std::cout << "type: " << mode << ", pos: " << x << " " << y << " aboba\n";
+    if (mode == 2) {
+        auto [mx, my] = get_monitor_size();
+        std::cout << mx/2 + x << ", " << my/2 + y << "\n";
+        std::string cmd = "hyprctl dispatch movecursor " + std::to_string(mx/2 + x) + " " + std::to_string(my/2 + y);
+        system(cmd.c_str());
+    }
+    // std::string cmd = "hyprctl dispatch movewindowpixel '" + std::to_string(x) + " " + std::to_string(y) + "',address:";
+    // Logger::debug("cmd: " + cmd);
+    // std::cerr << cmd << "\n";
+    auto check_address = [x, y]() -> bool {
+        std::string address = get_window_address();
+        if (address.empty()) {
+            return true;
+        }
+
+        // Notifier::notify("address: " + address, "info");
+        Logger::debug("window address: " + address);
+        // std::string curcmd = cmd + address;
+        std::string cmd;
+        cmd = "hyprctl dispatch movewindowpixel " + std::to_string(x) + " 0,address:" + address;
+        system(cmd.c_str());
+        cmd = "hyprctl dispatch movewindowpixel '0 " + std::to_string(y) + "',address:" + address;
+        system(cmd.c_str());
+        return false;
+    };
+
+    Glib::signal_timeout().connect(check_address, 1);
+}
+
+
 int Application::run(bool set_float) {
     load_styles();
     app->signal_startup().connect([this, set_float] {
         setup();
+        
+        main_window->present();
         if (set_float) {
             main_window->set_name("Vela");
         }
-        main_window->present();
+
+        fixposition();
     });
     app->signal_shutdown().connect([]() {
         if (Logger::get_level() != LogLevel::DEBUG) {
