@@ -101,15 +101,16 @@ void Application::fixposition() {
         int rx = x, ry = y;
         if (mode == 1)  {
             auto [cx, cy] = get_cursor_pos();
-            auto [mx, my] = get_monitor_size();
+            auto [mw, mh] = get_monitor_size();
+            auto [mx, my] = get_monitor_pos();
             auto [w, h] = get_window_size();
             auto [wx, wy] = get_window_pos();
-            rx = std::clamp(cx - mx/2, -wx, mx - w - wx);
-            ry = std::clamp(cy - my/2, -wy, my - h - wy);
+            rx = std::clamp(cx-mx - mw/2, -wx, mw - w - wx);
+            ry = std::clamp(cy-my - mh/2, -wy, mh - h - wy);
         }
 
         // Notifier::notify("address: " + address, "info");
-        Logger::debug("position type: " + std::to_string(mode) + ", pos: " + std::to_string(x) + " " + std::to_string(y));
+        Logger::debug("position type: " + std::to_string(mode) + ", pos: " + std::to_string(rx) + " " + std::to_string(ry));
         Logger::debug("window address: " + address);
         std::string cmd;
         cmd = "hyprctl dispatch movewindowpixel " + std::to_string(rx) + " 0,address:" + address;
@@ -119,7 +120,7 @@ void Application::fixposition() {
         return false;
     };
 
-    Glib::signal_timeout().connect(check_address, 100);
+    Glib::signal_timeout().connect(check_address, 50);
 }
 
 

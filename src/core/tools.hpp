@@ -30,4 +30,6 @@ std::pair<int, int> get_window_pos();
 
 std::pair<int, int> get_monitor_size();
 
+std::pair<int, int> get_monitor_pos();
+
 std::pair<int, int> get_cursor_pos();
