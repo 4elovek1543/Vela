@@ -34,11 +34,6 @@ MainWindow::MainWindow(const Glib::RefPtr<Gtk::Application> &app) : Gtk::Applica
     }, false);
 
     add_controller(controller);
-
-    auto focus_controller = Gtk::EventControllerFocus::create();
-    focus_controller->signal_leave().connect([this]() {
-
-    });
 }
 
 
