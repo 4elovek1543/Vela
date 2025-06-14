@@ -41,7 +41,7 @@ void Application::setup() {
     centre_window->setup();
     centre_window->set_vexpand(true);
     centre_window->set_hexpand(true);
-    main_window->add_window(centre_window, {1, 1});
+    main_window->add_window(centre_window, {1, 1}, true);
     if (cfg::getbool("bars.left")) {
         sz = std::pair<int, int>(cfg::getint("bar_left.width", 50), cfg::getint("window.height", 600));
         gridsz = std::pair<int, int>(cfg::getint("bar_left.rows", 4), 1);

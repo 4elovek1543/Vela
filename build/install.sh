@@ -72,11 +72,11 @@ if [ $f_clear == 1 ]; then
     # delete previous version
     curd=$(pwd)
     cd $dst
-    if [ -f "$name" ]; then
+    if [ -e "$name" ]; then
         sudo rm -R "$name"
     fi
     cd $curd
-    if [ -f "/usr/bin/vela" ]; then
+    if [ -e "/usr/bin/vela" ]; then
         sudo unlink "/usr/bin/vela"
     fi
 fi

@@ -1,7 +1,7 @@
 #!/bin/bash
 
 
-path="/usr/bin/Vela"
+path="/opt/Vela"
 
 
 while [[ "$#" -gt 0 ]]; do
@@ -30,12 +30,12 @@ while [[ "$#" -gt 0 ]]; do
 	esac
 done
 
-if [ -f "$path" ]; then
+if [ -e "$path" ]; then
     sudo rm -R "$path"
     echo "Deleted $path"
 fi
 
-if [ -f "/usr/bin/vela" ]; then
+if [ -e "/usr/bin/vela" ]; then
     sudo unlink "/usr/bin/vela"
     echo "Deleted symlink"
 fi

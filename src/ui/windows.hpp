@@ -14,9 +14,11 @@ class MainWindow : public Gtk::ApplicationWindow {
 public:
     MainWindow(const Glib::RefPtr<Gtk::Application> &app);
 
-    void add_window(ElWindow *win, const std::pair<int, int> pos);
+    void add_window(ElWindow *win, const std::pair<int, int> pos, bool init=false);
 private:
     Gtk::Grid _grid;
+
+    ElWindow *init_focus_window;
 };
 
 
@@ -29,6 +31,8 @@ public:
 
     void add_module(const moduleinfo &mod);
     void arrange_modules(int columns = 3);
+
+    FocusFrame *focus_frame;
 private:
     std::string name;
     std::pair<int, int> sz;
@@ -36,7 +40,6 @@ private:
     int iconsize;
 
     Gtk::Grid *_grid;
-    FocusFrame *focus_frame;
 
     std::vector<moduleinfo>  modules;
 };

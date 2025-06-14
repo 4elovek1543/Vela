@@ -34,12 +34,28 @@ MainWindow::MainWindow(const Glib::RefPtr<Gtk::Application> &app) : Gtk::Applica
     }, false);
 
     add_controller(controller);
+
+    auto focus_controller = Gtk::EventControllerFocus::create();
+    focus_controller->signal_leave().connect([this]() {
+
+    });
 }
 
 
-void MainWindow::add_window(ElWindow *win, const std::pair<int, int> pos) {
+void MainWindow::add_window(ElWindow *win, const std::pair<int, int> pos, bool init) {
     auto [row, col] = pos;
     _grid.attach(*win, col, row, 1, 1);
+    if (init) {
+        init_focus_window = win;
+        win->focus_frame->set_visible(true);
+        win->focus_frame->start_frame_animation(true);
+
+        auto ctr = Gtk::EventControllerFocus::create();
+        ctr->signal_leave().connect([this]() {
+            this->init_focus_window->focus_frame->start_frame_animation(false);
+        });
+        add_controller(ctr);
+    }
 }
 
 
