@@ -2,6 +2,7 @@
 :root {
     --border-radius: 8px;
     --bk-color: rgba(50, 53, 85, 0.25);
+    --window-marin: 10px;
 
     --border-radius-elem: 6px;
     --color-elem: rgb(179, 179, 226);
@@ -33,28 +34,28 @@
     border-top-left-radius: var(--border-radius);
     border-bottom-left-radius: var(--border-radius);
     background-color: var(--bk-color);
-    margin-right: 10px;
+    margin-right: var(--window-marin);
 }
 
 .right {
     border-top-right-radius: var(--border-radius);
     border-bottom-right-radius: var(--border-radius);
     background-color: var(--bk-color);
-    margin-left: 10px;
+    margin-left: var(--window-marin);
 }
 
 .top {
     border-top-left-radius: var(--border-radius);
     border-top-right-radius: var(--border-radius);
     background-color: var(--bk-color);
-    margin-bottom: 10px;
+    margin-bottom: var(--window-marin);
 }
 
 .bottom {
     border-bottom-left-radius: var(--border-radius);
     border-bottom-right-radius: var(--border-radius);
     background-color: var(--bk-color);
-    margin-top: 10px;
+    margin-top: var(--window-marin);
 }
 
 .element {
