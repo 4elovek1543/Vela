@@ -40,11 +40,13 @@ std::string joinpath(const std::vector<std::string> &val) {
 int to_int(const std::string &val, int defval=0) {
     if (val.empty()) return defval;
     int res = 0;
-    for (auto x : val) {
-        if (x < '0' or x > '9') return defval;
+    bool under0 = (val[0] == '-');
+    for (size_t i = under0; i < val.size(); i++) {
+        if (val[i] < '0' || val[i] > '9') return defval;
         res *= 10;
-        res += (x - '0');
+        res += (val[i] - '0');
     }
+    if (under0) res *= -1;
     return res;
 }
 
@@ -251,6 +253,17 @@ std::pair<int, int> get_monitor_size() {
     float sc = to_float(get_from_cmd(cmd), 1.0);
     return {float(w) / sc, float(h) / sc};
 }
+
+
+std::pair<int, int> get_monitor_pos() {
+    std::string cmd;
+    cmd = "hyprctl monitors -j | jq -r '.[] | select(.focused == true) | .x'";
+    auto x = to_int(get_from_cmd(cmd), 0);
+    cmd = "hyprctl monitors -j | jq -r '.[] | select(.focused == true) | .y'";
+    auto y = to_int(get_from_cmd(cmd), 0);
+    return {x, y};
+}
+
 
 std::pair<int, int> get_cursor_pos() {
     std::string cmd = "hyprctl cursorpos";
